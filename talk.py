@@ -10,6 +10,8 @@ import datetime
 import base64
 from pydub import AudioSegment
 from pydub.playback import play
+from pydub.playback import _play_with_simpleaudio
+import time
 
 init()
 
@@ -17,8 +19,8 @@ def open_file(filepath):
     with open(filepath, 'r', encoding='utf-8') as infile:
         return infile.read()
 
-api_key = open_file('openaiapikey2.txt')
-elapikey = open_file('elabapikey.txt')
+api_key = open_file('openaiapikey2.key')
+elapikey = open_file('elabapikey.key')
 
 conversation1 = []  
 chatbot1 = open_file('chatbot1.txt')
@@ -39,7 +41,13 @@ def chatgpt(api_key, conversation, chatbot, user_input, temperature=0.9, frequen
     conversation.append({"role": "assistant", "content": chat_response})
     return chat_response
 
-def text_to_speech(text, voice_id, api_key):
+
+def play_waiting_music():
+    audio = AudioSegment.from_file('waiting.wav')
+    return _play_with_simpleaudio(audio)
+
+
+def text_to_speech(text, voice_id, api_key, playback):
     url = f'https://api.elevenlabs.io/v1/text-to-speech/{voice_id}'
     headers = {
         'Accept': 'audio/mpeg',
@@ -55,6 +63,10 @@ def text_to_speech(text, voice_id, api_key):
         }
     }
     response = requests.post(url, headers=headers, json=data)
+    try:
+        playback.stop()
+    except:
+        print('error stopping playback')
     if response.status_code == 200:
         with open('output.mp3', 'wb') as f:
             f.write(response.content)
@@ -65,29 +77,32 @@ def text_to_speech(text, voice_id, api_key):
 
 def print_colored(agent, text):
     agent_colors = {
-        "Julie:": Fore.YELLOW,
+        "ChatBot:": Fore.YELLOW,
     }
     color = agent_colors.get(agent, "")
     print(color + f"{agent}: {text}" + Style.RESET_ALL, end="")
 
-voice_id1 = 'Your Voice ID'
+voice_id1 = '2EiwWnXFnvU5JabPnv8n'
+# voice_id1 = 'zl5ZqIU7ndzp8UL8KuqY'
 
-def record_and_transcribe(duration=8, fs=44100):
+def record_and_transcribe(playback, duration=8, fs=44100):
     print('Recording...')
     myrecording = sd.rec(int(duration * fs), samplerate=fs, channels=2)
     sd.wait()
     print('Recording complete.')
+    playback = play_waiting_music()
     filename = 'myrecording.wav'
     sf.write(filename, myrecording, fs)
     with open(filename, "rb") as file:
         openai.api_key = api_key
         result = openai.Audio.transcribe("whisper-1", file)
     transcription = result['text']
-    return transcription
+    return transcription, playback
 
 while True:
-    user_message = record_and_transcribe()
+    playback = None
+    user_message, playback = record_and_transcribe(playback)
     response = chatgpt(api_key, conversation1, chatbot1, user_message)
-    print_colored("Julie:", f"{response}\n\n")
+    print_colored("ChatBot:", f"{response}\n\n")
     user_message_without_generate_image = re.sub(r'(Response:|Narration:|Image: generate_image:.*|)', '', response).strip()
-    text_to_speech(user_message_without_generate_image, voice_id1, elapikey)
+    text_to_speech(user_message_without_generate_image, voice_id1, elapikey, playback)
