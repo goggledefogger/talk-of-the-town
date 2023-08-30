@@ -2,3 +2,4 @@
 config.env
 .python-version
 __pycache__/
+database.json
