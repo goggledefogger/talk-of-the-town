@@ -1,3 +1,4 @@
 *.key
 config.env
 .python-version
+__pycache__/
