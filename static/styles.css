@@ -57,3 +57,35 @@ button:disabled {
 button:hover {
     background-color: #0056b3;
 }
+
+.character-selection {
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* This will vertically center the items */
+    width: 100%;
+    margin-bottom: 20px;
+    gap: 10px; /* adds space between the label, dropdown, and button */
+}
+
+.character-selection label {
+    flex-shrink: 0; /* prevents the label from shrinking */
+}
+
+.character-selection #character_id {
+    flex-grow: 1; /* allows the dropdown to grow and take up available space */
+    flex-basis: 0; /* starts the dropdown at minimum width before growing */
+    min-width: 50%; /* ensures the dropdown has a minimum width */
+    margin-right: 10px; /* adds some space between the dropdown and the button */
+}
+
+.character-selection #setDefaultCharacterBtn {
+    padding: 5px 10px; /* adjust the padding to fit the text */
+    white-space: nowrap; /* prevents the button text from wrapping */
+}
+
+.character-selection select,
+.character-selection label,
+.character-selection button {
+    margin: 0; /* Reset default margin */
+    padding: 8px; /* Apply consistent padding */
+}
