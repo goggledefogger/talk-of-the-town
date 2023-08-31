@@ -3,7 +3,7 @@ from pubsub import pub
 import json
 import logging
 
-from database import update_data
+from database import update_character_data, get_data, update_data
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -16,18 +16,11 @@ def index():
     return render_template('index.html')
 
 # get the character data from the database
-@app.route('/get-character-data', methods=['GET'])
-def get_character_data():
+@app.route('/get-data', methods=['GET'])
+def get_data():
     with open('database.json', 'r') as file:
         data = json.load(file)
-    return jsonify(data['characters'])
-
-@app.route('/get-current-character', methods=['GET'])
-def get_current_character():
-    with open('database.json', 'r') as file:
-        data = json.load(file)
-    return jsonify({"current_character": data.get('current_character')})
-
+    return data
 
 @app.route('/add-character', methods=['POST'])
 def add_character():
@@ -57,16 +50,15 @@ def save_current_character():
     current_character = data.get('current_character')
 
     if current_character:
-        # Load the existing data from database.json
-        with open('database.json', 'r') as file:
-            saved_data = json.load(file)
+        saved_data = get_data()
+        # logging.info(str(saved_data))
 
+        logging.info(f"Current character: {current_character}")
         # Update the current_character field
         saved_data['current_character'] = current_character
 
-        # Save the updated data back to database.json
-        with open('database.json', 'w') as file:
-            json.dump(saved_data, file, indent=2)
+        # use database.py to save the updated data
+        update_data(json.dumps(saved_data))
 
         return jsonify({"success": True, "message": "Character saved successfully!"}), 200
     else:
@@ -74,18 +66,18 @@ def save_current_character():
 
 
 
-def handle_config_update(config):
-    # Update the character service configuration
-    logging.info(f"Updating configuration: {config}")
-    update_data(config)
+def handle_character_update(character_data):
+    logging.info(f"Updating character: {character_data}")
+    character_dict = json.loads(character_data)
+    update_character_data(character_dict["character_id"], character_dict)
 
 
-# Subscribe to the 'config_updated' event
-pub.subscribe(handle_config_update, 'config_updated')
+# Subscribe to the 'character_updated' event
+pub.subscribe(handle_character_update, 'character_updated')
 
 
-@app.route('/update-config', methods=['POST'])
-def update_config():
+@app.route('/update-character', methods=['POST'])
+def update_character():
     character_id = request.form.get('character_id')
     voice_id = request.form.get('voice_id')
     prompt = request.form.get('prompt')
@@ -99,10 +91,10 @@ def update_config():
 
     # Convert dictionary to JSON string
     data_json = json.dumps(data_dict)
-    logging.info(f"New configuration: {data_json}")
+    logging.info(f"New character data: {data_json}")
 
-    pub.sendMessage('config_updated', config=data_json)
-    return jsonify({"message": "Configuration updated!"}), 200
+    pub.sendMessage('character_updated', character_data=data_json)
+    return jsonify({"message": "Character updated!"}), 200
 
 
 if __name__ == '__main__':

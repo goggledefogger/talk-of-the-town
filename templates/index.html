@@ -15,20 +15,20 @@
       <h1>Character Configuration</h1>
       <form
         id="configForm"
-        action="http://127.0.0.1:5002/update-config"
+        action="http://127.0.0.1:5002/update-character"
         method="post"
         onsubmit="handleSubmit(event, 'Configuration updated successfully!')"
       >
         <!-- Character Selection and Update Section -->
         <div class="character-selection">
           <label for="character_id">Select Character:</label>
-          <select id="character_id" onchange="loadCharacterData(true)">
+          <select id="character_id" name="character_id" onchange="loadCharacterData(true)">
             <!-- Options will be populated dynamically from the database -->
           </select>
           <button
             type="button"
-            id="setDefaultCharacter"
-            onclick="setCurrentCharacter()"
+            id="setDefaultCharacterBtn"
+            onclick="setDefaultCharacter()"
           >
             Set as Default
           </button>
