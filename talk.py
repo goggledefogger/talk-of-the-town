@@ -11,6 +11,7 @@ from pydub.playback import play
 from pydub.playback import _play_with_simpleaudio
 
 from database import get_current_character_data
+from audio_device import get_default_audio_input_device, get_device_metadata
 
 init()
 
@@ -28,11 +29,14 @@ if not api_key:
     raise Exception("Please set your OPENAI_API_KEY environment variable.")
 
 conversation1 = []
-# Get information about the default input device
-default_input_device_info = sd.query_devices(kind='input')
-# Extract the number of channels supported by the default input device
-num_channels = default_input_device_info['max_input_channels']
-sample_rate = int(default_input_device_info['default_samplerate'])
+
+device_name = get_default_audio_input_device()
+device_metadata = get_device_metadata(device_name)
+
+print(f"audio device info: {str(device_metadata)}")
+
+num_channels = device_metadata['channels']
+sample_rate = int(device_metadata['sample_rate'])
 
 
 def chatgpt(api_key, conversation, character_data, user_input, temperature=0.9, frequency_penalty=0.2, presence_penalty=0):
