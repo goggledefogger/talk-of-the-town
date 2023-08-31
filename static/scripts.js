@@ -155,3 +155,35 @@ function setDefaultCharacter() {
     });
 }
 
+function confirmDeleteCharacter() {
+  const characterId = document.getElementById('character_id').value;
+  const confirmation = window.confirm(
+    `Are you sure you want to delete the character "${characterId.replace(
+      /-/g,
+      ' '
+    )}"?`
+  );
+  if (confirmation) {
+    deleteCharacter(characterId);
+  }
+}
+
+function deleteCharacter(characterId) {
+  fetch('/delete-character', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ character_id: characterId }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        alert('Character deleted successfully!');
+        // Reload the page to refresh the character list
+        location.reload();
+      } else {
+        alert('Error deleting character. Please try again.');
+      }
+    });
+}

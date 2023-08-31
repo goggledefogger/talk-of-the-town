@@ -3,7 +3,7 @@ from pubsub import pub
 import json
 import logging
 
-from database import update_character_data, get_data, update_data
+from database import update_character_data, get_data, update_data, delete_character_data
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -95,6 +95,19 @@ def update_character():
 
     pub.sendMessage('character_updated', character_data=data_json)
     return jsonify({"message": "Character updated!"}), 200
+
+@app.route('/delete-character', methods=['POST'])
+def delete_character():
+    try:
+        character_id = request.json.get('character_id')
+
+        deleted = delete_character_data(character_id)
+        if not deleted:
+            return jsonify({"success": False, "message": "Character not found."}), 400
+
+        return jsonify({"success": True, "message": "Character deleted successfully."}), 200
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
 
 
 if __name__ == '__main__':
