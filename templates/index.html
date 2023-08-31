@@ -15,7 +15,7 @@
       <h1>Character Configuration</h1>
       <form
         id="configForm"
-        action="http://127.0.0.1:5002/update-character"
+        action="http://localhost:5002/update-character"
         method="post"
         onsubmit="handleSubmit(event, 'Configuration updated successfully!')"
       >
@@ -29,13 +29,22 @@
           >
             <!-- Options will be populated dynamically from the database -->
           </select>
-          <button
-            type="button"
-            id="setDefaultCharacterBtn"
-            onclick="setDefaultCharacter()"
-          >
-            Set as Default
-          </button>
+          <div class="character-buttons">
+            <button
+              type="button"
+              id="setDefaultCharacterBtn"
+              onclick="setDefaultCharacter()"
+            >
+              Set as Default
+            </button>
+            <button
+              type="button"
+              id="deleteCharacterBtn"
+              onclick="confirmDeleteCharacter()"
+            >
+              Delete
+            </button>
+          </div>
         </div>
 
         <label for="voice_id">Voice ID:</label>
@@ -54,7 +63,7 @@
       <h2>Add New Character</h2>
       <form
         id="characterForm"
-        action="http://127.0.0.1:5002/add-character"
+        action="http://localhost:5002/add-character"
         method="post"
         onsubmit="handleSubmit(event, 'New character added successfully!')"
       >

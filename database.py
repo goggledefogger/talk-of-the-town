@@ -46,3 +46,21 @@ def get_data():
         data = json.load(file)
         return data
 
+
+def delete_character_data(character_id):
+    # Load the existing data from database.json
+    with open('database.json', 'r') as file:
+        data = json.load(file)
+
+    # Check if character exists
+    if character_id not in data['characters']:
+        return False
+
+    # Delete the character
+    del data['characters'][character_id]
+
+    # Save the updated data back to database.json
+    with open('database.json', 'w') as file:
+        json.dump(data, file, indent=4)
+
+    return True
