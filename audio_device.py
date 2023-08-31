@@ -3,62 +3,68 @@ import sys
 import pyaudio
 
 def get_default_audio_input_device():
-    platform = sys.platform
+    p = pyaudio.PyAudio()
 
-    # For Linux
-    if platform == "linux" or platform == "linux2":
+    if sys.platform == "darwin":
+        # macOS
         try:
-            result = subprocess.check_output(['pactl', 'info']).decode('utf-8')
-            for line in result.split('\n'):
-                if 'Default Source' in line:
-                    return line.split(': ')[1]
+            # Get a list of all input audio devices
+            cmd = "SwitchAudioSource -a -t input"
+            devices = subprocess.check_output(cmd, shell=True).decode('utf-8').strip().split('\n')
+
+            # Get the default input device
+            cmd_default = "SwitchAudioSource -c -t input"
+            default_device_name = subprocess.check_output(cmd_default, shell=True).decode('utf-8').strip()
+
+            for i in range(p.get_device_count()):
+                info = p.get_device_info_by_index(i)
+                if info["name"] == default_device_name:
+                    return i  # Return the device index
         except Exception as e:
-            print(f"Error: {e}")
+            print(f"Error getting default audio input device on macOS: {e}")
             return None
 
-    # For macOS
-    elif platform == "darwin":
-        try:
-            result = subprocess.check_output(["SwitchAudioSource", "-c", "-t", "input"], text=True)
-            return result.strip()
-        except Exception as e:
-            print(f"Error: {e}")
-            return None
-
-    # For Windows
-    elif platform == "win32":
-        # Note: This requires PyAudio to be installed
-        import pyaudio
-        p = pyaudio.PyAudio()
+    elif sys.platform == "win32":
+        # Windows
         default_device_index = p.get_default_input_device_info()["index"]
-        return p.get_device_info_by_index(default_device_index)["name"]
+        return default_device_index
+
+    elif sys.platform == "linux" or sys.platform == "linux2":
+        # Linux
+        try:
+            cmd = "pacmd list-sources | grep '* index:'"
+            default_device_index = int(subprocess.check_output(cmd, shell=True).decode('utf-8').split(':')[1].strip())
+            return default_device_index
+        except Exception as e:
+            print(f"Error getting default audio input device on Linux: {e}")
+            return None
 
     else:
-        print("Unsupported OS")
+        print("Unsupported OS platform")
         return None
 
-def get_device_metadata(device_name):
+    p.terminate()
+
+
+def get_device_metadata(device_index):
     p = pyaudio.PyAudio()
-    for i in range(p.get_device_count()):
-        device_info = p.get_device_info_by_index(i)
-        if device_info["name"] == device_name:
-            return {
-                "name": device_name,
-                "channels": device_info["maxInputChannels"],
-                "sample_rate": device_info["defaultSampleRate"]
-            }
-    return None
+    device_info = p.get_device_info_by_index(device_index)
+    return {
+        "name": device_info["name"],
+        "channels": device_info["maxInputChannels"],
+        "sample_rate": device_info["defaultSampleRate"]
+    }
 
 def main():
-    device_name = get_default_audio_input_device()
-    if device_name:
-        metadata = get_device_metadata(device_name)
+    device_index = get_default_audio_input_device()
+    if device_index:
+        metadata = get_device_metadata(device_index)
         if metadata:
             print(f"Device Name: {metadata['name']}")
             print(f"Channels: {metadata['channels']}")
             print(f"Sample Rate: {metadata['sample_rate']}")
         else:
-            print(f"Could not retrieve metadata for device: {device_name}")
+            print(f"Could not retrieve metadata for device: {device_index}")
     else:
         print("Could not retrieve default audio input device.")
 

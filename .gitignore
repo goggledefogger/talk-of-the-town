@@ -3,3 +3,5 @@ config.env
 .python-version
 __pycache__/
 database.json
+myrecording.wav
+output.mp3
