@@ -19,13 +19,20 @@
         method="post"
         onsubmit="handleSubmit(event, 'Configuration updated successfully!')"
       >
-        <label for="character_id">Character:</label>
-        <select
-          id="character_id"
-          name="character_id"
-        >
-          <!-- Options will be populated by JavaScript -->
-        </select>
+        <!-- Character Selection and Update Section -->
+        <div class="character-selection">
+          <label for="character_id">Select Character:</label>
+          <select id="character_id" onchange="loadCharacterData(true)">
+            <!-- Options will be populated dynamically from the database -->
+          </select>
+          <button
+            type="button"
+            id="setDefaultCharacter"
+            onclick="setCurrentCharacter()"
+          >
+            Set as Default
+          </button>
+        </div>
 
         <label for="voice_id">Voice ID:</label>
         <input type="text" id="voice_id" name="voice_id" />
@@ -33,7 +40,9 @@
         <label for="prompt">Prompt:</label>
         <textarea id="prompt" name="prompt"></textarea>
 
-        <button type="submit" id="configSubmit" disabled>Save Configuration</button>
+        <button type="submit" id="configSubmit" disabled>
+          Save Configuration
+        </button>
       </form>
 
       <hr />

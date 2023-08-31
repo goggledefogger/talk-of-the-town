@@ -51,6 +51,28 @@ def add_character():
 
     return jsonify({"message": "Character added successfully!"}), 200
 
+@app.route('/save-current-character', methods=['POST'])
+def save_current_character():
+    data = request.json
+    current_character = data.get('current_character')
+
+    if current_character:
+        # Load the existing data from database.json
+        with open('database.json', 'r') as file:
+            saved_data = json.load(file)
+
+        # Update the current_character field
+        saved_data['current_character'] = current_character
+
+        # Save the updated data back to database.json
+        with open('database.json', 'w') as file:
+            json.dump(saved_data, file, indent=2)
+
+        return jsonify({"success": True, "message": "Character saved successfully!"}), 200
+    else:
+        return jsonify({"success": False, "message": "Error saving character."}), 400
+
+
 
 def handle_config_update(config):
     # Update the character service configuration
