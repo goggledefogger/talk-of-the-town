@@ -40,6 +40,11 @@ def update_character_data(character_id, new_data):
     with open('database.json', 'w') as file:
         json.dump(saved_data, file, indent=2)
 
+def get_current_character_data():
+    with open('database.json', 'r') as file:
+        data = json.load(file)
+        current_character_id = data.get('current_character')
+        return data['characters'].get(current_character_id)
 
 def get_data():
     with open('database.json', 'r') as file:
@@ -64,3 +69,4 @@ def delete_character_data(character_id):
         json.dump(data, file, indent=4)
 
     return True
+

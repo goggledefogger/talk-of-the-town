@@ -1,17 +1,16 @@
 import sounddevice as sd
 import soundfile as sf
-import numpy as np
 import openai
 import os
+from dotenv import load_dotenv
 import requests
 import re
 from colorama import Fore, Style, init
-import datetime
-import base64
 from pydub import AudioSegment
 from pydub.playback import play
 from pydub.playback import _play_with_simpleaudio
-import time
+
+from database import get_current_character_data
 
 init()
 
@@ -19,17 +18,28 @@ def open_file(filepath):
     with open(filepath, 'r', encoding='utf-8') as infile:
         return infile.read()
 
-api_key = open_file('openaiapikey2.key')
-elapikey = open_file('elabapikey.key')
+load_dotenv('config.env')
 
-conversation1 = []  
-chatbot1 = open_file('chatbot1.txt')
+api_key = os.getenv('OPENAI_API_KEY')
+elapikey = os.getenv('ELEVEN_API_KEY')
 
-def chatgpt(api_key, conversation, chatbot, user_input, temperature=0.9, frequency_penalty=0.2, presence_penalty=0):
+# throw an exception if the API key is not set
+if not api_key:
+    raise Exception("Please set your OPENAI_API_KEY environment variable.")
+
+conversation1 = []
+# Get information about the default input device
+default_input_device_info = sd.query_devices(kind='input')
+# Extract the number of channels supported by the default input device
+num_channels = default_input_device_info['max_input_channels']
+sample_rate = int(default_input_device_info['default_samplerate'])
+
+
+def chatgpt(api_key, conversation, character_data, user_input, temperature=0.9, frequency_penalty=0.2, presence_penalty=0):
     openai.api_key = api_key
     conversation.append({"role": "user","content": user_input})
     messages_input = conversation.copy()
-    prompt = [{"role": "system", "content": chatbot}]
+    prompt = [{"role": "system", "content": character_data['prompt']}]
     messages_input.insert(0, prompt[0])
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0613",
@@ -82,12 +92,9 @@ def print_colored(agent, text):
     color = agent_colors.get(agent, "")
     print(color + f"{agent}: {text}" + Style.RESET_ALL, end="")
 
-voice_id1 = '2EiwWnXFnvU5JabPnv8n'
-# voice_id1 = 'zl5ZqIU7ndzp8UL8KuqY'
-
-def record_and_transcribe(playback, duration=8, fs=44100):
+def record_and_transcribe(playback, duration=8, fs=sample_rate):
     print('Recording...')
-    myrecording = sd.rec(int(duration * fs), samplerate=fs, channels=2)
+    myrecording = sd.rec(int(duration * fs), samplerate=fs, channels=num_channels)
     sd.wait()
     print('Recording complete.')
     playback = play_waiting_music()
@@ -99,10 +106,12 @@ def record_and_transcribe(playback, duration=8, fs=44100):
     transcription = result['text']
     return transcription, playback
 
+character_data = get_current_character_data()
+
 while True:
     playback = None
     user_message, playback = record_and_transcribe(playback)
-    response = chatgpt(api_key, conversation1, chatbot1, user_message)
+    response = chatgpt(api_key, conversation1, character_data, user_message)
     print_colored("ChatBot:", f"{response}\n\n")
     user_message_without_generate_image = re.sub(r'(Response:|Narration:|Image: generate_image:.*|)', '', response).strip()
-    text_to_speech(user_message_without_generate_image, voice_id1, elapikey, playback)
+    text_to_speech(user_message_without_generate_image, character_data['voice_id'], elapikey, playback)

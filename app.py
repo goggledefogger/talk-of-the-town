@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, render_template, redirect, url_for
 from pubsub import pub
 import json
 import logging
+import subprocess
 
 from database import update_character_data, get_data, update_data, delete_character_data
 
@@ -14,6 +15,17 @@ app = Flask(__name__)
 @app.route('/index.html')
 def index():
     return render_template('index.html')
+
+@app.route('/start-conversation', methods=['POST'])
+def start_conversation():
+    # data = request.json
+    # character_id = data.get('character_id')
+
+    # Start talk.py as a separate process
+    # subprocess.Popen(['python', 'talk.py', character_id])
+    subprocess.Popen(['python', 'talk.py'])
+
+    return jsonify({"status": "success", "message": "Conversation started"})
 
 # get the character data from the database
 @app.route('/get-data', methods=['GET'])

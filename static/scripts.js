@@ -135,23 +135,23 @@ function populateCurrentCharacterDropdown() {
 
 // Function to save the selected character as the default
 function setDefaultCharacter() {
-    const selectedCharacter = document.getElementById('character_id').value;
+  const selectedCharacter = document.getElementById('character_id').value;
 
-    // Make an HTTP POST request to save the selected character as default
-    fetch('/save-current-character', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ current_character: selectedCharacter })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Character set as default successfully!');
-        } else {
-            alert('Error setting character as default.');
-        }
+  // Make an HTTP POST request to save the selected character as default
+  fetch('/save-current-character', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ current_character: selectedCharacter }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        alert('Character set as default successfully!');
+      } else {
+        alert('Error setting character as default.');
+      }
     });
 }
 
@@ -185,5 +185,31 @@ function deleteCharacter(characterId) {
       } else {
         alert('Error deleting character. Please try again.');
       }
+    });
+}
+
+function startConversation() {
+  // Get the currently selected character
+  const characterId = document.getElementById('character_id').value;
+
+  // Send a request to the server to start the conversation
+  fetch('/start-conversation', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ character_id: characterId }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.status === 'success') {
+        // Display feedback to the user
+        alert('Conversation started! Please speak into the microphone.');
+      } else {
+        console.error('Failed to start the conversation:', data.message);
+      }
+    })
+    .catch((error) => {
+      console.error('Error starting the conversation:', error);
     });
 }
