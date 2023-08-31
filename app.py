@@ -42,7 +42,7 @@ def add_character():
     with open('database.json', 'w') as file:
         json.dump(data, file, indent=4)
 
-    return redirect(url_for('index'))  # Redirect back to the main page
+    return jsonify({"message": "Character added successfully!"}), 200
 
 
 def handle_config_update(config):
