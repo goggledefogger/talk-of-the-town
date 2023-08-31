@@ -134,3 +134,40 @@ document
 
     // The form will continue with its default submission behavior
   });
+
+// Function to populate the current character dropdown
+function populateCurrentCharacterDropdown() {
+  const dropdown = document.getElementById('current_character');
+  for (let characterId in characterDataGlobal) {
+    const option = document.createElement('option');
+    option.value = characterId;
+    option.textContent = characterId.replace(/-/g, ' ');
+    dropdown.appendChild(option);
+  }
+}
+
+// Function to save the selected character as the default
+function setDefaultCharacter() {
+    const selectedCharacter = document.getElementById('character_id').value;
+
+    // Make an HTTP POST request to save the selected character as default
+    fetch('/save-current-character', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ current_character: selectedCharacter })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Character set as default successfully!');
+        } else {
+            alert('Error setting character as default.');
+        }
+    });
+}
+
+// Event listener for the "Set as Default" button
+document.getElementById('setDefaultCharacter').addEventListener('click', setDefaultCharacter);
+
