@@ -3,20 +3,50 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Configuration Update</title>
+    <title>Character Configuration</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+    <script src="{{ url_for('static', filename='scripts.js') }}" defer></script>
   </head>
   <body>
-    <form action="http://127.0.0.1:5002/update-config" method="post">
-      <label for="character_id">Character ID:</label>
-      <input type="text" id="character_id" name="character_id" />
+    <div class="container">
+      <h1>Character Configuration</h1>
+      <form action="http://127.0.0.1:5002/update-config" method="post">
+        <label for="character_id">Character:</label>
+        <select
+          id="character_id"
+          name="character_id"
+          onchange="loadCharacterData()"
+        >
+          <!-- Options will be populated by JavaScript -->
+        </select>
 
-      <label for="voice_id">Voice ID:</label>
-      <input type="text" id="voice_id" name="voice_id" />
+        <label for="voice_id">Voice ID:</label>
+        <input type="text" id="voice_id" name="voice_id" />
 
-      <label for="prompt">Prompt:</label>
-      <input type="text" id="prompt" name="prompt" />
-      <br /><br />
-      <input type="submit" value="Update Configuration" />
-    </form>
+        <label for="prompt">Prompt:</label>
+        <textarea id="prompt" name="prompt"></textarea>
+
+        <button type="submit">Update Configuration</button>
+      </form>
+
+      <hr />
+
+      <h2>Add New Character</h2>
+      <form action="http://127.0.0.1:5002/add-character" method="post">
+        <label for="new_character_id">Character ID (e.g., cat-cartman):</label>
+        <input type="text" id="new_character_id" name="new_character_id" />
+
+        <label for="new_voice_id">Voice ID:</label>
+        <input type="text" id="new_voice_id" name="new_voice_id" />
+
+        <label for="new_prompt">Prompt:</label>
+        <textarea id="new_prompt" name="new_prompt"></textarea>
+
+        <button type="submit">Add Character</button>
+      </form>
+    </div>
   </body>
 </html>

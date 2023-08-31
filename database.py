@@ -9,13 +9,15 @@ def update_data(new_data):
     with open('database.json', 'r') as file:
         saved_data = json.load(file)
 
-    # Update only the modified fields
-    if new_data_dict['character_id']:
-        saved_data['character_id'] = new_data_dict['character_id']
-    if new_data_dict['voice_id']:
-        saved_data['voice_id'] = new_data_dict['voice_id']
-    if new_data_dict['prompt']:
-        saved_data['prompt'] = new_data_dict['prompt']
+    character = new_data_dict['character_id']
+    if character in saved_data['characters']:
+        if new_data_dict['voice_id']:
+            saved_data['characters'][character]['voice_id'] = new_data_dict['voice_id']
+        if new_data_dict['prompt']:
+            saved_data['characters'][character]['prompt'] = new_data_dict['prompt']
+
+    # Update the current character
+    saved_data['current_character'] = character
 
     # Save the updated data back to database.json
     with open('database.json', 'w') as file:

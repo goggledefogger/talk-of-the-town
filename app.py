@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect, url_for
 from pubsub import pub
 import json
 import logging
@@ -14,6 +14,35 @@ app = Flask(__name__)
 @app.route('/index.html')
 def index():
     return render_template('index.html')
+
+# get the character data from the database
+@app.route('/get-character-data', methods=['GET'])
+def get_character_data():
+    with open('database.json', 'r') as file:
+        data = json.load(file)
+    return jsonify(data['characters'])
+
+@app.route('/add-character', methods=['POST'])
+def add_character():
+    new_character_id = request.form.get('new_character_id')
+    new_voice_id = request.form.get('new_voice_id')
+    new_prompt = request.form.get('new_prompt')
+
+    # Load the existing data from database.json
+    with open('database.json', 'r') as file:
+        data = json.load(file)
+
+    # Add the new character data
+    data['characters'][new_character_id] = {
+        "voice_id": new_voice_id,
+        "prompt": new_prompt
+    }
+
+    # Save the updated data back to database.json
+    with open('database.json', 'w') as file:
+        json.dump(data, file, indent=4)
+
+    return redirect(url_for('index'))  # Redirect back to the main page
 
 
 def handle_config_update(config):
