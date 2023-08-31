@@ -13,7 +13,17 @@ from pydub.playback import _play_with_simpleaudio
 from database import get_current_character_data
 from audio_device import get_default_audio_input_device, get_device_metadata
 
+conversation_active = False
+
 init()
+
+def is_conversation_active():
+    global conversation_active
+    return conversation_active
+
+def set_conversation_state(state: bool):
+    global conversation_active
+    conversation_active = state
 
 def open_file(filepath):
     with open(filepath, 'r', encoding='utf-8') as infile:
@@ -32,8 +42,6 @@ conversation1 = []
 
 device_name = get_default_audio_input_device()
 device_metadata = get_device_metadata(device_name)
-
-print(f"audio device info: {str(device_metadata)}")
 
 num_channels = device_metadata['channels']
 sample_rate = int(device_metadata['sample_rate'])
@@ -110,12 +118,18 @@ def record_and_transcribe(playback, duration=8, fs=sample_rate):
     transcription = result['text']
     return transcription, playback
 
-character_data = get_current_character_data()
+def start_talking():
+    character_data = get_current_character_data()
 
-while True:
-    playback = None
-    user_message, playback = record_and_transcribe(playback)
-    response = chatgpt(api_key, conversation1, character_data, user_message)
-    print_colored("ChatBot:", f"{response}\n\n")
-    user_message_without_generate_image = re.sub(r'(Response:|Narration:|Image: generate_image:.*|)', '', response).strip()
-    text_to_speech(user_message_without_generate_image, character_data['voice_id'], elapikey, playback)
+    while is_conversation_active():
+        playback = None
+        user_message, playback = record_and_transcribe(playback)
+        response = chatgpt(api_key, conversation1, character_data, user_message)
+        print_colored("ChatBot:", f"{response}\n\n")
+        user_message_without_generate_image = re.sub(r'(Response:|Narration:|Image: generate_image:.*|)', '', response).strip()
+        text_to_speech(user_message_without_generate_image, character_data['voice_id'], elapikey, playback)
+        if not is_conversation_active():
+            break
+
+if __name__ == "__main__":
+    start_talking()

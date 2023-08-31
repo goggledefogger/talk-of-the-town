@@ -11,9 +11,16 @@
     <script src="{{ url_for('static', filename='scripts.js') }}" defer></script>
   </head>
   <body>
-
-    <button id="startConversationBtn" onclick="startConversation()">Start Conversation</button>
-
+    <!-- Conversation Control Section -->
+    <div class="conversation-control">
+      <button id="startConversationBtn" onclick="startConversation()">
+        Start Conversation
+      </button>
+      <button id="stopConversationBtn" onclick="stopConversation()" disabled>
+        Stop Conversation
+      </button>
+      <p id="conversationStatus">Status: Not Started</p>
+    </div>
 
     <div class="container">
       <h1>Character Configuration</h1>

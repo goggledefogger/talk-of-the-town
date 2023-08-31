@@ -189,27 +189,37 @@ function deleteCharacter(characterId) {
 }
 
 function startConversation() {
-  // Get the currently selected character
-  const characterId = document.getElementById('character_id').value;
-
-  // Send a request to the server to start the conversation
   fetch('/start-conversation', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ character_id: characterId }),
   })
     .then((response) => response.json())
     .then((data) => {
-      if (data.status === 'success') {
-        // Display feedback to the user
-        alert('Conversation started! Please speak into the microphone.');
-      } else {
-        console.error('Failed to start the conversation:', data.message);
+      if (data.status === 'started') {
+        document.getElementById('startConversationBtn').disabled = true;
+        document.getElementById('stopConversationBtn').disabled = false;
+        document.getElementById('conversationStatus').textContent =
+          'Status: In Progress';
       }
-    })
-    .catch((error) => {
-      console.error('Error starting the conversation:', error);
+    });
+}
+
+function stopConversation() {
+  fetch('/stop-conversation', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.status === 'stopped') {
+        document.getElementById('startConversationBtn').disabled = false;
+        document.getElementById('stopConversationBtn').disabled = true;
+        document.getElementById('conversationStatus').textContent =
+          'Status: Stopped';
+      }
     });
 }

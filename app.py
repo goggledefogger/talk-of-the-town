@@ -2,14 +2,14 @@ from flask import Flask, request, jsonify, render_template, redirect, url_for
 from pubsub import pub
 import json
 import logging
-import subprocess
+import threading
 
 from database import update_character_data, get_data, update_data, delete_character_data
+from talk import start_talking, is_conversation_active, set_conversation_state
 
 logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
-
 
 @app.route('/')
 @app.route('/index.html')
@@ -17,15 +17,24 @@ def index():
     return render_template('index.html')
 
 @app.route('/start-conversation', methods=['POST'])
-def start_conversation():
-    # data = request.json
-    # character_id = data.get('character_id')
+def start_conversation_endpoint():
+    if not is_conversation_active():
+        set_conversation_state(True)
+        # Start a new thread for the conversation to allow other requests to be processed
+        threading.Thread(target=initiate_conversation).start()
+        return jsonify({'status': 'started'})
+    return jsonify({'status': 'error'})
 
-    # Start talk.py as a separate process
-    # subprocess.Popen(['python', 'talk.py', character_id])
-    subprocess.Popen(['python', 'talk.py'])
+@app.route('/stop-conversation', methods=['POST'])
+def stop_conversation_endpoint():
+    set_conversation_state(False)
+    return jsonify({'status': 'stopped'})
 
-    return jsonify({"status": "success", "message": "Conversation started"})
+def initiate_conversation():
+    logging.info('Starting conversation...' + str(is_conversation_active()))
+    if is_conversation_active():
+        start_talking()  # Call the function from talk.py
+
 
 # get the character data from the database
 @app.route('/get-data', methods=['GET'])

@@ -104,3 +104,8 @@ button:hover {
     margin: 0; /* Reset default margin */
     padding: 8px; /* Apply consistent padding */
 }
+
+.conversation-control {
+    margin-top: 20px;
+    text-align: center;
+}
