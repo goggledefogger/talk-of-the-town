@@ -13,12 +13,16 @@
   <body>
     <div class="container">
       <h1>Character Configuration</h1>
-      <form action="http://127.0.0.1:5002/update-config" method="post">
+      <form
+        id="configForm"
+        action="http://127.0.0.1:5002/update-config"
+        method="post"
+        onsubmit="handleSubmit(event, 'Configuration updated successfully!')"
+      >
         <label for="character_id">Character:</label>
         <select
           id="character_id"
           name="character_id"
-          onchange="loadCharacterData()"
         >
           <!-- Options will be populated by JavaScript -->
         </select>
@@ -29,13 +33,18 @@
         <label for="prompt">Prompt:</label>
         <textarea id="prompt" name="prompt"></textarea>
 
-        <button type="submit">Update Configuration</button>
+        <button type="submit" id="configSubmit" disabled>Save Configuration</button>
       </form>
 
       <hr />
 
       <h2>Add New Character</h2>
-      <form action="http://127.0.0.1:5002/add-character" method="post">
+      <form
+        id="characterForm"
+        action="http://127.0.0.1:5002/add-character"
+        method="post"
+        onsubmit="handleSubmit(event, 'New character added successfully!')"
+      >
         <label for="new_character_id">Character ID (e.g., cat-cartman):</label>
         <input type="text" id="new_character_id" name="new_character_id" />
 
@@ -45,7 +54,7 @@
         <label for="new_prompt">Prompt:</label>
         <textarea id="new_prompt" name="new_prompt"></textarea>
 
-        <button type="submit">Add Character</button>
+        <button type="submit" disabled>Add New Character</button>
       </form>
     </div>
   </body>
