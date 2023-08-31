@@ -2,12 +2,11 @@ let characterDataGlobal = {}; // This will store the fetched character data
 
 // Function to load character data from the Flask API
 function fetchCharacterData() {
-  fetch('/get-character-data')
+  fetch('/get-data')
     .then((response) => response.json())
     .then((data) => {
       characterDataGlobal = data; // Store the fetched data in the global variable
       populateCharacterDropdown();
-      // set the current character
       setCurrentCharacter();
       // populate the form with the current character data
       loadCharacterData();
@@ -17,7 +16,7 @@ function fetchCharacterData() {
 function populateCharacterDropdown() {
   const dropdown = document.getElementById('character_id');
   dropdown.innerHTML = ''; // Clear existing options
-  for (let characterId in characterDataGlobal) {
+  for (let characterId in characterDataGlobal.characters) {
     const option = document.createElement('option');
     option.value = characterId;
     option.textContent = characterId.replace(/-/g, ' '); // Convert "cat-cartman" to "cat cartman"
@@ -27,7 +26,7 @@ function populateCharacterDropdown() {
 
 function loadCharacterData(userAction = false) {
   const characterId = document.getElementById('character_id').value;
-  const characterData = characterDataGlobal[characterId];
+  const characterData = characterDataGlobal.characters[characterId];
   if (characterData) {
     document.getElementById('voice_id').value = characterData.voice_id;
     document.getElementById('prompt').value = characterData.prompt;
@@ -43,11 +42,6 @@ function loadCharacterData(userAction = false) {
 
 // Call the function initially to fetch and populate the character data
 fetchCharacterData();
-
-// Attach the onchange event after data has been loaded
-document.getElementById('character_id').addEventListener('change', function () {
-  loadCharacterData(true);
-});
 
 function handleSubmit(event, message) {
   event.preventDefault(); // Prevent the default form submission behavior
@@ -84,11 +78,6 @@ function checkFormValidity(formId) {
   }
 }
 
-// Attach the onchange event after data has been loaded
-document.getElementById('character_id').addEventListener('change', function () {
-  loadCharacterData(true);
-});
-
 function attachInputChangeListeners(formId) {
   const form = document.getElementById(formId);
   const inputs = form.querySelectorAll('input, select, textarea');
@@ -106,13 +95,11 @@ attachInputChangeListeners('configForm');
 attachInputChangeListeners('characterForm');
 
 function setCurrentCharacter() {
-  fetch('/get-current-character')
-    .then((response) => response.json())
-    .then((data) => {
-      const dropdown = document.getElementById('character_id');
-      dropdown.value = data.current_character;
-      loadCharacterData();
-    });
+  // use the data structure to get it
+  const currentCharacter = characterDataGlobal['current_character'];
+  const dropdown = document.getElementById('character_id');
+  dropdown.value = currentCharacter;
+  loadCharacterData();
 }
 
 function sanitizeCharacterId(characterId) {
@@ -167,7 +154,4 @@ function setDefaultCharacter() {
         }
     });
 }
-
-// Event listener for the "Set as Default" button
-document.getElementById('setDefaultCharacter').addEventListener('click', setDefaultCharacter);
 
