@@ -7,6 +7,9 @@ function fetchCharacterData() {
     .then((data) => {
       characterDataGlobal = data; // Store the fetched data in the global variable
       populateCharacterDropdown();
+      // set the current character
+      setCurrentCharacter();
+      // populate the form with the current character data
       loadCharacterData();
     });
 }
@@ -101,3 +104,33 @@ function attachInputChangeListeners(formId) {
 // Call the function for each form:
 attachInputChangeListeners('configForm');
 attachInputChangeListeners('characterForm');
+
+function setCurrentCharacter() {
+  fetch('/get-current-character')
+    .then((response) => response.json())
+    .then((data) => {
+      const dropdown = document.getElementById('character_id');
+      dropdown.value = data.current_character;
+      loadCharacterData();
+    });
+}
+
+function sanitizeCharacterId(characterId) {
+  // Convert spaces to hyphens
+  let sanitized = characterId.replace(/\s+/g, '-');
+
+  // Remove non-alphanumeric and non-hyphen characters
+  sanitized = sanitized.replace(/[^a-zA-Z0-9-]/g, '');
+
+  return sanitized.toLowerCase(); // Convert to lowercase for consistency
+}
+
+document
+  .getElementById('characterForm')
+  .addEventListener('submit', function (event) {
+    // Sanitize the character_id input value
+    const characterIdInput = document.getElementById('new_character_id');
+    characterIdInput.value = sanitizeCharacterId(characterIdInput.value);
+
+    // The form will continue with its default submission behavior
+  });
