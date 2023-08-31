@@ -47,6 +47,13 @@ button {
     font-size: 16px;
 }
 
+button:disabled {
+    background-color: #cccccc; /* Gray background */
+    cursor: not-allowed;      /* Display a "no action" cursor */
+    opacity: 0.6;             /* Make the button slightly transparent */
+}
+
+
 button:hover {
     background-color: #0056b3;
 }
