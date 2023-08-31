@@ -22,6 +22,13 @@ def get_character_data():
         data = json.load(file)
     return jsonify(data['characters'])
 
+@app.route('/get-current-character', methods=['GET'])
+def get_current_character():
+    with open('database.json', 'r') as file:
+        data = json.load(file)
+    return jsonify({"current_character": data.get('current_character')})
+
+
 @app.route('/add-character', methods=['POST'])
 def add_character():
     new_character_id = request.form.get('new_character_id')
