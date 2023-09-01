@@ -5,7 +5,7 @@ import logging
 import threading
 
 from database import update_character_data, get_data, update_data, delete_character_data
-from talk import start_talking, is_conversation_active, set_conversation_state
+from talk import start_talking, is_conversation_active, set_conversation_state, get_status
 from generate_image import generate_image
 
 logging.basicConfig(level=logging.INFO)
@@ -158,11 +158,10 @@ def get_character_image(character_id):
     return jsonify({"image_path": image_path})
 
 @app.route('/status', methods=['GET'])
-def get_status():
-    conversation_is_active = is_conversation_active()
+def get_server_status():
     return {
-        "server_status": "running",
-        "loop_status": "active" if conversation_is_active else "inactive"
+        "status": get_status(),
+        "conversation_active": is_conversation_active()
     }, 200
 
 
