@@ -1,4 +1,6 @@
+import os
 import openai
+
 
 def generate_image(prompt, save_path):
     """
@@ -23,6 +25,12 @@ def generate_image(prompt, save_path):
 
     print(image_url)
     print(save_path)
+
+    # Ensure the directory exists
+    directory = os.path.dirname(save_path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
 
     # Download the image and save it locally
     import urllib.request
