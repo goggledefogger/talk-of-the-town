@@ -248,7 +248,6 @@ function regenerateCharacterImage() {
     .then((response) => response.json())
     .then((data) => {
       if (data.status === 'success') {
-        alert(data.message);
         // Refresh the image
         const characterImageElement = document.getElementById('characterImage');
         characterImageElement.src = `/character_images/${characterId}.png?${new Date().getTime()}`; // Cache busting
