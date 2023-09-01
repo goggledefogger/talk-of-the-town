@@ -25,7 +25,11 @@
     <div class="container">
       <h1>Character Configuration</h1>
 
-      <img id="characterImage" src="/character_images/{{ character_id }}" alt="Character Image">
+      <img
+        id="characterImage"
+        src="/character_images/{{ character_id }}"
+        alt="Character Image"
+      />
 
       <form
         id="configForm"
@@ -50,6 +54,13 @@
               onclick="setDefaultCharacter()"
             >
               Set as Default
+            </button>
+            <button
+              type="button"
+              id="regenerateImageBtn"
+              onclick="regenerateCharacterImage()"
+            >
+              Regenerate Image
             </button>
             <button
               type="button"

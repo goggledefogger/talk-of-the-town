@@ -135,10 +135,20 @@ def delete_character():
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
+@app.route('/generate_character_image', methods=['POST'])
+def generate_character_image():
+    character_id = request.form.get('character_id')
+    prompt = request.form.get('prompt')
 
-@app.route('/character_images/<character_image_url>')
-def serve_character_image(character_image_url):
-    return send_from_directory('character_images', f"{character_image_url}")
+    # Call the function to generate the image using DALL·E
+    generate_image(prompt, f"character_images/{character_id}.png")
+
+    return jsonify({"status": "success", "message": "Image regenerated successfully"})
+
+
+@app.route('/character_images/<character_image_filename>')
+def serve_character_image(character_image_filename):
+    return send_from_directory('character_images', f"{character_image_filename}")
 
 
 @app.route('/get_character_image/<character_id>', methods=['GET'])

@@ -44,11 +44,11 @@ function loadCharacterData(userAction = false) {
 
 function setCharacterImage(characterId) {
   fetch(`/get_character_image/${characterId}`)
-        .then(response => response.json())
-        .then(data => {
-            const characterImageElement = document.getElementById('characterImage');
-            characterImageElement.src = data.image_path;
-        });
+    .then((response) => response.json())
+    .then((data) => {
+      const characterImageElement = document.getElementById('characterImage');
+      characterImageElement.src = data.image_path;
+    });
 }
 
 // Call the function initially to fetch and populate the character data
@@ -190,7 +190,6 @@ function deleteCharacter(characterId) {
     .then((response) => response.json())
     .then((data) => {
       if (data.success) {
-        alert('Character deleted successfully!');
         // Reload the page to refresh the character list
         location.reload();
       } else {
@@ -231,6 +230,30 @@ function stopConversation() {
         document.getElementById('stopConversationBtn').disabled = true;
         document.getElementById('conversationStatus').textContent =
           'Status: Stopped';
+      }
+    });
+}
+
+function regenerateCharacterImage() {
+  const characterId = document.getElementById('character_id').value;
+  const characterPrompt = characterId.replace(/-/g, ' '); // Convert character_id back to a prompt
+
+  fetch('/generate_character_image', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: `character_id=${characterId}&prompt=${characterPrompt}`,
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.status === 'success') {
+        alert(data.message);
+        // Refresh the image
+        const characterImageElement = document.getElementById('characterImage');
+        characterImageElement.src = `/character_images/${characterId}.png?${new Date().getTime()}`; // Cache busting
+      } else {
+        alert('Failed to regenerate the image.');
       }
     });
 }
