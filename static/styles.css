@@ -157,3 +157,11 @@ button:hover {
     background-color: rgba(0, 0, 0, 0.5); /* Black with 50% opacity */
     z-index: 9998; /* Ensure it's below the loader but above other content */
 }
+
+.server-status-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 5px;
+    margin: 5px;
+}

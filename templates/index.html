@@ -19,9 +19,10 @@
       <button id="stopConversationBtn" onclick="stopConversation()" disabled>
         Stop Conversation
       </button>
-      <p id="conversationStatus">Status: not started</p>
-      <p id="serverStatus">Server: not started</p>
-      <p id="loopStatus">Loop: not started</p>
+      <div class="server-status-container">
+        <div>Server: </div>
+        <div id="serverStatus"></div>
+      </div>
     </div>
 
     <div class="container">

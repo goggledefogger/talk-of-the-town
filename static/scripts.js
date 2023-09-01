@@ -221,8 +221,6 @@ function startConversation() {
       if (data.status === 'started') {
         document.getElementById('startConversationBtn').disabled = true;
         document.getElementById('stopConversationBtn').disabled = false;
-        document.getElementById('conversationStatus').textContent =
-          'Status: in progress';
       }
     });
 }
@@ -241,8 +239,6 @@ function stopConversation() {
       if (data.status === 'stopped') {
         document.getElementById('startConversationBtn').disabled = false;
         document.getElementById('stopConversationBtn').disabled = true;
-        document.getElementById('conversationStatus').textContent =
-          'Status: stopped';
       }
     });
 }
@@ -286,20 +282,10 @@ function checkServerStatus() {
   fetch('/status')
     .then((response) => response.json())
     .then((data) => {
-      if (data.server_status === 'running') {
-        document.getElementById('serverStatus').innerText = 'Server: running';
-        document.getElementById('loopStatus').innerText =
-          'Loop: ' + data.loop_status;
-      } else {
-        document.getElementById('serverStatus').innerText =
-          'Server: not running';
-        document.getElementById('loopStatus').innerText = '';
-      }
+      document.getElementById('serverStatus').innerText = data.status;
     })
     .catch((error) => {
-      document.getElementById('serverStatus').innerText =
-        'Server: not running';
-      document.getElementById('loopStatus').innerText = '';
+      document.getElementById('serverStatus').innerText = 'SERVER ERROR';
     });
 }
 
@@ -311,12 +297,12 @@ function startPollingServerStatus() {
     clearInterval(serverStatusInterval);
   }
 
-  // Start a new interval to check the server status every 20 seconds
-  serverStatusInterval = setInterval(checkServerStatus, 20000);
+  // Start a new interval to check the server status every 5 seconds
+  serverStatusInterval = setInterval(checkServerStatus, 5000);
 }
 
 // Start the polling when the page loads
 document.addEventListener('DOMContentLoaded', (event) => {
   checkServerStatus();
-  // startPollingServerStatus();
+  startPollingServerStatus();
 });
