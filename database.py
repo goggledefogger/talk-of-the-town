@@ -70,3 +70,22 @@ def delete_character_data(character_id):
 
     return True
 
+
+import os
+
+def save_image(character_id, image_content):
+    # Define a directory for storing character images
+    directory = "character_images"
+
+    # Ensure the directory exists
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    # Define the path for the image
+    image_path = os.path.join(directory, f"{character_id}.png")
+
+    # Save the image
+    with open(image_path, "wb") as f:
+        f.write(image_content)
+
+    return image_path

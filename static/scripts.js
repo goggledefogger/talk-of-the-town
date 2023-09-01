@@ -34,10 +34,21 @@ function loadCharacterData(userAction = false) {
     console.warn(`Character data for '${characterId}' not found.`);
   }
 
+  setCharacterImage(characterId);
+
   // If this function was triggered by a user action, enable the button
   if (userAction) {
     document.getElementById('configSubmit').disabled = true;
   }
+}
+
+function setCharacterImage(characterId) {
+  fetch(`/get_character_image/${characterId}`)
+        .then(response => response.json())
+        .then(data => {
+            const characterImageElement = document.getElementById('characterImage');
+            characterImageElement.src = data.image_path;
+        });
 }
 
 // Call the function initially to fetch and populate the character data

@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template, redirect, url_for
+from flask import Flask, request, jsonify, render_template, send_from_directory
 from pubsub import pub
 import json
 import logging
@@ -6,8 +6,9 @@ import threading
 
 from database import update_character_data, get_data, update_data, delete_character_data
 from talk import start_talking, is_conversation_active, set_conversation_state
+from generate_image import generate_image
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 
@@ -49,6 +50,8 @@ def add_character():
     new_voice_id = request.form.get('new_voice_id')
     new_prompt = request.form.get('new_prompt')
 
+    logging.info('adding character id ' + str(new_character_id))
+
     # Load the existing data from database.json
     with open('database.json', 'r') as file:
         data = json.load(file)
@@ -62,6 +65,8 @@ def add_character():
     # Save the updated data back to database.json
     with open('database.json', 'w') as file:
         json.dump(data, file, indent=4)
+
+    generate_image(new_prompt, f"character_images/{new_character_id}.png")
 
     return jsonify({"message": "Character added successfully!"}), 200
 
@@ -129,6 +134,18 @@ def delete_character():
         return jsonify({"success": True, "message": "Character deleted successfully."}), 200
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route('/character_images/<character_image_url>')
+def serve_character_image(character_image_url):
+    return send_from_directory('character_images', f"{character_image_url}")
+
+
+@app.route('/get_character_image/<character_id>', methods=['GET'])
+def get_character_image(character_id):
+    # Assuming the image filename is the same as character_id or some logic to get the filename
+    image_path = f"/character_images/{character_id}.png"
+    return jsonify({"image_path": image_path})
 
 
 if __name__ == '__main__':
