@@ -2,7 +2,7 @@ import json
 import logging
 
 def update_data(new_data):
-    logging.info(f"New configuration: {new_data}")
+    # logging.info(f"New configuration: {new_data}")
     new_data_dict = json.loads(new_data)
 
     # Load the existing data from database.json
@@ -25,7 +25,7 @@ def update_data(new_data):
         json.dump(saved_data, file, indent=2)
 
 def update_character_data(character_id, new_data):
-    logging.info(f"New configuration: {json.dumps(new_data)}")
+    # logging.info(f"New configuration: {json.dumps(new_data)}")
 
     # Load the existing data from database.json
     with open('database.json', 'r') as file:
