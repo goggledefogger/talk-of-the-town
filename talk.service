@@ -1,0 +1,11 @@
+[Unit]
+Description=Talk of the town
+
+[Service]
+User=$USER
+Environment="XDG_RUNTIME_DIR=/run/user/1000"
+WorkingDirectory=$SOURCE_DIR
+ExecStart=python app.py
+
+[Install]
+WantedBy=multi-user.target
