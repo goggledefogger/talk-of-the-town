@@ -24,9 +24,9 @@ This project provides a web-based interface where users can interact with virtua
    pip install -r requirements.txt
    ```
 
-   Note: On Raspberry Pi, you may also need to run the following command to ensure `numpy` works correctly:
+   Note: On Raspberry Pi, you may also need to run the following commands to ensure `numpy` works correctly:
    ```bash
-   sudo apt-get install libjasper-dev
+   sudo apt-get install libatlas-base-dev libjasper-dev
    ```
 
    On Linux systems, you might need to run:
