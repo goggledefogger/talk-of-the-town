@@ -32,7 +32,7 @@ def open_file(filepath):
 load_dotenv('config.env')
 
 api_key = os.getenv('OPENAI_API_KEY')
-elapikey = os.getenv('ELEVEN_API_KEY')
+elapikey = os.getenv('ELEVEN_LABS_KEY')
 
 # throw an exception if the API key is not set
 if not api_key:
