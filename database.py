@@ -1,5 +1,8 @@
 import json
+import os
 import logging
+
+system_prompt = ""
 
 def update_data(new_data):
     # logging.info(f"New configuration: {new_data}")
@@ -71,8 +74,6 @@ def delete_character_data(character_id):
     return True
 
 
-import os
-
 def save_image(character_id, image_content):
     # Define a directory for storing character images
     directory = "character_images"
@@ -89,3 +90,14 @@ def save_image(character_id, image_content):
         f.write(image_content)
 
     return image_path
+
+
+def get_system_prompt():
+    global system_prompt
+    if not system_prompt:
+        with open('database.json', 'r') as file:
+            data = json.load(file)
+            system_prompt = data['system_prompt']
+            return system_prompt
+    else:
+        return system_prompt

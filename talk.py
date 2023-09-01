@@ -10,7 +10,7 @@ from pydub import AudioSegment
 from pydub.playback import play
 from pydub.playback import _play_with_simpleaudio
 
-from database import get_current_character_data
+from database import get_current_character_data, get_system_prompt
 from audio_device import get_default_audio_input_device, get_device_metadata
 
 conversation_active = False
@@ -51,7 +51,7 @@ def chatgpt(api_key, conversation, character_data, user_input, temperature=0.9, 
     openai.api_key = api_key
     conversation.append({"role": "user","content": user_input})
     messages_input = conversation.copy()
-    prompt = [{"role": "system", "content": character_data['prompt']}]
+    prompt = [{"role": "system", "content": get_system_prompt() + character_data['prompt']}]
     messages_input.insert(0, prompt[0])
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0613",
