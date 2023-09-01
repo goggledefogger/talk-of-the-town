@@ -25,11 +25,38 @@
     <div class="container">
       <h1>Character Configuration</h1>
 
-      <img
-        id="characterImage"
-        src="/character_images/{{ character_id }}"
-        alt="Character Image"
-      />
+      <div class="character-image-and-buttons-container">
+        <div class="character-image-container">
+          <img
+            id="characterImage"
+            src="/character_images/{{ character_id }}"
+            alt="Character Image"
+          />
+        </div>
+        <div class="character-buttons">
+          <button
+            type="button"
+            id="setDefaultCharacterBtn"
+            onclick="setDefaultCharacter()"
+          >
+            Set as Default
+          </button>
+          <button
+            type="button"
+            id="regenerateImageBtn"
+            onclick="regenerateCharacterImage()"
+          >
+            Regenerate Image
+          </button>
+          <button
+            type="button"
+            id="deleteCharacterBtn"
+            onclick="confirmDeleteCharacter()"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
 
       <form
         id="configForm"
@@ -47,29 +74,6 @@
           >
             <!-- Options will be populated dynamically from the database -->
           </select>
-          <div class="character-buttons">
-            <button
-              type="button"
-              id="setDefaultCharacterBtn"
-              onclick="setDefaultCharacter()"
-            >
-              Set as Default
-            </button>
-            <button
-              type="button"
-              id="regenerateImageBtn"
-              onclick="regenerateCharacterImage()"
-            >
-              Regenerate Image
-            </button>
-            <button
-              type="button"
-              id="deleteCharacterBtn"
-              onclick="confirmDeleteCharacter()"
-            >
-              Delete
-            </button>
-          </div>
         </div>
 
         <label for="voice_id">Voice ID:</label>

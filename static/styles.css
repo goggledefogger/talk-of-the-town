@@ -109,3 +109,20 @@ button:hover {
     margin-top: 20px;
     text-align: center;
 }
+
+.character-image-container {
+    display: flex;
+    justify-content: center; /* Horizontally center */
+    align-items: center;     /* Vertically center */
+}
+
+.character-image-container img {
+    max-width: 100%;         /* Ensure the image doesn't overflow the container */
+    max-height: 100%;
+}
+
+.character-image-and-buttons-container {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 10px;
+}
