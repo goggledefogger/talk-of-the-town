@@ -2,6 +2,7 @@ let characterDataGlobal = {}; // This will store the fetched character data
 
 // Function to load character data from the Flask API
 function fetchCharacterData() {
+  showLoader();
   fetch('/get-data')
     .then((response) => response.json())
     .then((data) => {
@@ -10,6 +11,7 @@ function fetchCharacterData() {
       setCurrentCharacter();
       // populate the form with the current character data
       loadCharacterData();
+      hideLoader();
     });
 }
 
@@ -43,11 +45,13 @@ function loadCharacterData(userAction = false) {
 }
 
 function setCharacterImage(characterId) {
+  showLoader();
   fetch(`/get_character_image/${characterId}`)
     .then((response) => response.json())
     .then((data) => {
       const characterImageElement = document.getElementById('characterImage');
       characterImageElement.src = data.image_path;
+      hideLoader();
     });
 }
 
@@ -56,6 +60,7 @@ fetchCharacterData();
 
 function handleSubmit(event, message) {
   event.preventDefault(); // Prevent the default form submission behavior
+  showLoader();
   fetch(event.target.action, {
     method: 'POST',
     body: new FormData(event.target), // Send form data
@@ -66,6 +71,7 @@ function handleSubmit(event, message) {
       location.reload(); // Reload the page to reflect any changes
     })
     .catch((error) => {
+      hideLoader();
       alert('An error occurred. Please try again.');
     });
 }
@@ -147,7 +153,7 @@ function populateCurrentCharacterDropdown() {
 // Function to save the selected character as the default
 function setDefaultCharacter() {
   const selectedCharacter = document.getElementById('character_id').value;
-
+  showLoader();
   // Make an HTTP POST request to save the selected character as default
   fetch('/save-current-character', {
     method: 'POST',
@@ -158,6 +164,7 @@ function setDefaultCharacter() {
   })
     .then((response) => response.json())
     .then((data) => {
+      hideLoader();
       if (data.success) {
         alert('Character set as default successfully!');
       } else {
@@ -180,6 +187,7 @@ function confirmDeleteCharacter() {
 }
 
 function deleteCharacter(characterId) {
+  showLoader();
   fetch('/delete-character', {
     method: 'POST',
     headers: {
@@ -189,6 +197,7 @@ function deleteCharacter(characterId) {
   })
     .then((response) => response.json())
     .then((data) => {
+      hideLoader();
       if (data.success) {
         // Reload the page to refresh the character list
         location.reload();
@@ -238,6 +247,7 @@ function regenerateCharacterImage() {
   const characterId = document.getElementById('character_id').value;
   const characterPrompt = characterId.replace(/-/g, ' '); // Convert character_id back to a prompt
 
+  showLoader();
   fetch('/generate_character_image', {
     method: 'POST',
     headers: {
@@ -247,6 +257,7 @@ function regenerateCharacterImage() {
   })
     .then((response) => response.json())
     .then((data) => {
+      hideLoader();
       if (data.status === 'success') {
         // Refresh the image
         const characterImageElement = document.getElementById('characterImage');
@@ -255,4 +266,14 @@ function regenerateCharacterImage() {
         alert('Failed to regenerate the image.');
       }
     });
+}
+
+function showLoader() {
+  document.getElementById('loader').style.display = 'block';
+  document.getElementById('dimmedBackground').style.display = 'block';
+}
+
+function hideLoader() {
+  document.getElementById('loader').style.display = 'none';
+  document.getElementById('dimmedBackground').style.display = 'none';
 }
