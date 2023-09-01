@@ -157,6 +157,15 @@ def get_character_image(character_id):
     image_path = f"/character_images/{character_id}.png"
     return jsonify({"image_path": image_path})
 
+@app.route('/status', methods=['GET'])
+def get_status():
+    conversation_is_active = is_conversation_active()
+    return {
+        "server_status": "running",
+        "loop_status": "active" if conversation_is_active else "inactive"
+    }, 200
+
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5002, debug=True)
