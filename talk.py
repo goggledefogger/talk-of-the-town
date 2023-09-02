@@ -3,7 +3,6 @@ import soundfile as sf
 import openai
 import os
 from dotenv import load_dotenv
-import requests
 import re
 from colorama import Fore, Style, init
 from pydub import AudioSegment
@@ -12,6 +11,7 @@ from pydub.playback import _play_with_simpleaudio
 
 from database import get_current_character_data, get_system_prompt
 from audio_device import get_default_audio_input_device, get_device_metadata
+from eleven_labs import get_speech_audio
 
 conversation_active = False
 status = 'not started'
@@ -37,7 +37,6 @@ def open_file(filepath):
 load_dotenv('config.env')
 
 api_key = os.getenv('OPENAI_API_KEY')
-elapikey = os.getenv('ELEVEN_LABS_KEY')
 
 # throw an exception if the API key is not set
 if not api_key:
@@ -77,24 +76,10 @@ def play_waiting_music():
     return _play_with_simpleaudio(audio)
 
 
-def text_to_speech(text, voice_id, api_key, playback):
+def text_to_speech(text, voice_id, playback):
     global status
     status = 'synthesizing voice...'
-    url = f'https://api.elevenlabs.io/v1/text-to-speech/{voice_id}'
-    headers = {
-        'Accept': 'audio/mpeg',
-        'xi-api-key': api_key,
-        'Content-Type': 'application/json'
-    }
-    data = {
-        'text': text,
-        'model_id': 'eleven_monolingual_v1',
-        'voice_settings': {
-            'stability': 0.6,
-            'similarity_boost': 0.85
-        }
-    }
-    response = requests.post(url, headers=headers, json=data)
+    response = get_speech_audio(text, voice_id)
     try:
         playback.stop()
     except:
@@ -142,7 +127,7 @@ def start_talking():
         response = chatgpt(api_key, conversation1, character_data, user_message)
         print_colored("ChatBot:", f"{response}\n\n")
         user_message_without_generate_image = re.sub(r'(Response:|Narration:|Image: generate_image:.*|)', '', response).strip()
-        text_to_speech(user_message_without_generate_image, character_data['voice_id'], elapikey, playback)
+        text_to_speech(user_message_without_generate_image, character_data['voice_id'], playback)
         if not is_conversation_active():
             break
 
