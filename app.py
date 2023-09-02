@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, render_template, send_from_directory
 from pubsub import pub
+from flask_socketio import SocketIO
 import json
 import logging
 import threading
@@ -11,6 +12,9 @@ from generate_image import generate_image
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
+
+socketio = SocketIO(app)
+socketio.run(app)
 
 @app.route('/')
 @app.route('/index.html')
