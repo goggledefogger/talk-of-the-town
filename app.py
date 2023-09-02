@@ -7,6 +7,7 @@ import threading
 from database import update_character_data, get_data, update_data, delete_character_data
 from talk import start_talking, is_conversation_active, set_conversation_state, get_status
 from generate_image import generate_image
+from eleven_labs import get_random_voice_id
 
 logging.basicConfig(level=logging.INFO)
 
@@ -51,6 +52,9 @@ def add_character():
     new_prompt = request.form.get('new_prompt')
 
     logging.info('adding character id ' + str(new_character_id))
+
+    if not new_voice_id:
+        new_voice_id = get_random_voice_id()
 
     # Load the existing data from database.json
     with open('database.json', 'r') as file:
