@@ -33,7 +33,7 @@
 
     <div class="character-image-and-buttons-container">
       <div class="character-image-container">
-        <img id="characterImage" src="/character_images/{{ character_id }}" alt="Character Image" class="character-image not-started"/>
+        <img id="characterImage" alt="Character Image" class="character-image not-started"/>
         <div class="status-display">
           <svg width="200" height="100" viewBox="0 0 200 100" style="background-color: #ffffff4d;">
             <circle id="leftEye" cx="60" cy="30" r="0" fill="#333" />
@@ -71,7 +71,7 @@
       <input type="text" id="voice_id" name="voice_id" />
 
       <label for="prompt">Prompt:</label>
-      <textarea id="prompt" name="prompt"></textarea>
+      <textarea id="prompt" name="prompt" rows="5"></textarea>
 
       <button type="submit" id="configSubmit" disabled>
         Save Configuration
@@ -90,7 +90,7 @@
       <input type="text" id="new_voice_id" name="new_voice_id" />
 
       <label for="new_prompt">Prompt:</label>
-      <textarea id="new_prompt" name="new_prompt"></textarea>
+      <textarea id="new_prompt" name="new_prompt" rows="5"></textarea>
 
       <button type="submit" disabled>Add New Character</button>
     </form>
