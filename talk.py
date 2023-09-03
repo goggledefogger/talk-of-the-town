@@ -14,7 +14,7 @@ from audio_device import get_default_audio_input_device, get_device_metadata
 from eleven_labs import get_speech_audio
 
 conversation_active = False
-status = 'not started'
+status = 'not_started'
 
 init()
 
@@ -53,7 +53,7 @@ sample_rate = int(device_metadata['sample_rate'])
 
 def chatgpt(api_key, conversation, character_data, user_input, temperature=0.9, frequency_penalty=0.2, presence_penalty=0):
     global status
-    status = 'generating response...'
+    status = 'generating_response'
     openai.api_key = api_key
     conversation.append({"role": "user","content": user_input})
     messages_input = conversation.copy()
@@ -67,7 +67,7 @@ def chatgpt(api_key, conversation, character_data, user_input, temperature=0.9, 
         messages=messages_input)
     chat_response = completion['choices'][0]['message']['content']
     conversation.append({"role": "assistant", "content": chat_response})
-    status = 'finished generating response'
+    status = 'finished_generating_response'
     return chat_response
 
 
@@ -78,13 +78,13 @@ def play_waiting_music():
 
 def text_to_speech(text, voice_id, playback):
     global status
-    status = 'synthesizing voice...'
+    status = 'synthesizing_voice'
     response = get_speech_audio(text, voice_id)
     try:
         playback.stop()
     except:
         print('error stopping playback')
-    status = 'speaking...'
+    status = 'speaking'
     if response.status_code == 200:
         with open('output.mp3', 'wb') as f:
             f.write(response.content)
@@ -92,7 +92,7 @@ def text_to_speech(text, voice_id, playback):
         play(audio)
     else:
         print('Error:', response.text)
-    status = 'done speaking'
+    status = 'done_speaking'
 
 def print_colored(agent, text):
     agent_colors = {
@@ -103,11 +103,11 @@ def print_colored(agent, text):
 
 def record_and_transcribe(playback, duration=8, fs=sample_rate):
     global status
-    status = "recording..."
+    status = "recording"
     print('Recording...')
     myrecording = sd.rec(int(duration * fs), samplerate=fs, channels=num_channels)
     sd.wait()
-    status = "transcribing..."
+    status = "transcribing"
     print('Recording complete.')
     playback = play_waiting_music()
     filename = 'myrecording.wav'
