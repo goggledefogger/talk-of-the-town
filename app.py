@@ -20,10 +20,14 @@ def index():
 
 @app.route('/start-conversation', methods=['POST'])
 def start_conversation_endpoint():
+    data = request.json
+    character_id = data.get('character_id')
+
     if not is_conversation_active():
         set_conversation_state(True)
         # Start a new thread for the conversation to allow other requests to be processed
-        threading.Thread(target=initiate_conversation).start()
+        args = { 'character_id': character_id }
+        threading.Thread(target=initiate_conversation, kwargs=args).start()
         return jsonify({'status': 'started'})
     return jsonify({'status': 'error'})
 
@@ -32,10 +36,11 @@ def stop_conversation_endpoint():
     set_conversation_state(False)
     return jsonify({'status': 'stopped'})
 
-def initiate_conversation():
+def initiate_conversation(character_id=None):
+    logging.info('character_id: ' + str(character_id))
     logging.info('Starting conversation...' + str(is_conversation_active()))
     if is_conversation_active():
-        start_talking()  # Call the function from talk.py
+        start_talking(character_id)  # Call the function from talk.py
 
 
 # get the character data from the database

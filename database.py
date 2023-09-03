@@ -43,11 +43,13 @@ def update_character_data(character_id, new_data):
     with open('database.json', 'w') as file:
         json.dump(saved_data, file, indent=2)
 
-def get_current_character_data():
+def get_current_character_data(character_id=None):
     with open('database.json', 'r') as file:
         data = json.load(file)
-        current_character_id = data.get('current_character')
-        return data['characters'].get(current_character_id)
+        # if a character_id is not provided, use the current_character field
+        if not character_id:
+            character_id = data.get('current_character')
+        return data['characters'].get(character_id)
 
 def get_data():
     with open('database.json', 'r') as file:

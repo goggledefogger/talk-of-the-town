@@ -208,12 +208,14 @@ function deleteCharacter(characterId) {
 }
 
 function startConversation() {
+  const characterId = document.getElementById('character_id').value;
   checkServerStatus();
   fetch('/start-conversation', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
+    body: JSON.stringify({ character_id: characterId }),
   })
     .then((response) => response.json())
     .then((data) => {
