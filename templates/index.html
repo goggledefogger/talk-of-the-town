@@ -1,118 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Character Configuration</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='styles.css') }}"
-    />
-    <script src="{{ url_for('static', filename='scripts.js') }}" defer></script>
-  </head>
-  <body>
-    <!-- Conversation Control Section -->
-    <div class="conversation-control">
-      <button id="startConversationBtn" onclick="startConversation()">
-        Start Conversation
-      </button>
-      <button id="stopConversationBtn" onclick="stopConversation()" disabled>
-        Stop Conversation
-      </button>
-      <div class="server-status-container">
-        <div>Server: </div>
-        <div id="serverStatus"></div>
-      </div>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Character Configuration</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  <script src="{{ url_for('static', filename='animations.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='scripts.js') }}" defer></script>
+</head>
+
+<body>
+  <!-- Conversation Control Section -->
+  <div class="conversation-control">
+    <button id="startConversationBtn" onclick="startConversation()">
+      Start Conversation
+    </button>
+    <button id="stopConversationBtn" onclick="stopConversation()" disabled>
+      Stop Conversation
+    </button>
+    <div class="server-status-container">
+      <div>Server:</div>
+      <div id="serverStatus"></div>
     </div>
+  </div>
 
-    <div class="container">
-      <div class="loader" id="loader"></div>
-      <div class="dimmed-background" id="dimmedBackground"></div>
+  <div class="container">
+    <div class="loader" id="loader"></div>
+    <div class="dimmed-background" id="dimmedBackground"></div>
 
-      <h1>Character Configuration</h1>
+    <h1>Character Configuration</h1>
 
-      <div class="character-image-and-buttons-container">
-        <div class="character-image-container">
-          <img
-            id="characterImage"
-            src="/character_images/{{ character_id }}"
-            alt="Character Image"
-          />
-        </div>
-        <div class="character-buttons">
-          <button
-            type="button"
-            id="setDefaultCharacterBtn"
-            onclick="setDefaultCharacter()"
-          >
-            Set as Default
-          </button>
-          <button
-            type="button"
-            id="regenerateImageBtn"
-            onclick="regenerateCharacterImage()"
-          >
-            Regenerate Image
-          </button>
-          <button
-            type="button"
-            id="deleteCharacterBtn"
-            onclick="confirmDeleteCharacter()"
-          >
-            Delete
-          </button>
+    <div class="character-image-and-buttons-container">
+      <div class="character-image-container">
+        <img id="characterImage" src="/character_images/{{ character_id }}" alt="Character Image" class="character-image not-started"/>
+        <div class="status-display">
+          <svg width="200" height="100" viewBox="0 0 200 100" style="background-color: #ffffff4d;">
+            <circle id="leftEye" cx="60" cy="30" r="0" fill="#333" />
+            <circle id="rightEye" cx="140" cy="30" r="0" fill="#333" />
+            <rect id="upperTeeth" x="10" y="40" width="180" height="5" fill="#ddd" />
+            <rect id="lowerTeeth" x="10" y="55" width="180" height="5" fill="#ddd" />
+            <path id="mouth" d="M10 50 Q100 70 190 50" fill="none" stroke="black" stroke-width="5" />
+          </svg>
         </div>
       </div>
-
-      <form
-        id="configForm"
-        action="/update-character"
-        method="post"
-        onsubmit="handleSubmit(event, 'Configuration updated successfully!')"
-      >
-        <!-- Character Selection and Update Section -->
-        <div class="character-selection">
-          <label for="character_id">Select Character:</label>
-          <select
-            id="character_id"
-            name="character_id"
-            onchange="loadCharacterData(true)"
-          >
-            <!-- Options will be populated dynamically from the database -->
-          </select>
-        </div>
-
-        <label for="voice_id">Voice ID:</label>
-        <input type="text" id="voice_id" name="voice_id" />
-
-        <label for="prompt">Prompt:</label>
-        <textarea id="prompt" name="prompt"></textarea>
-
-        <button type="submit" id="configSubmit" disabled>
-          Save Configuration
+      <div class="character-buttons">
+        <button type="button" id="setDefaultCharacterBtn" onclick="setDefaultCharacter()">
+          Set as Default
         </button>
-      </form>
-
-      <hr />
-
-      <h2>Add New Character</h2>
-      <form
-        id="characterForm"
-        action="/add-character"
-        method="post"
-        onsubmit="handleSubmit(event, 'New character added successfully!')"
-      >
-        <label for="new_character_id">Character ID (e.g., cat-cartman):</label>
-        <input type="text" id="new_character_id" name="new_character_id" />
-
-        <label for="new_voice_id">Voice ID:</label>
-        <input type="text" id="new_voice_id" name="new_voice_id" />
-
-        <label for="new_prompt">Prompt:</label>
-        <textarea id="new_prompt" name="new_prompt"></textarea>
-
-        <button type="submit" disabled>Add New Character</button>
-      </form>
+        <button type="button" id="regenerateImageBtn" onclick="regenerateCharacterImage()">
+          Regenerate Image
+        </button>
+        <button type="button" id="deleteCharacterBtn" onclick="confirmDeleteCharacter()">
+          Delete
+        </button>
+      </div>
     </div>
-  </body>
+
+    <form id="configForm" action="/update-character" method="post"
+      onsubmit="handleSubmit(event, 'Configuration updated successfully!')">
+      <!-- Character Selection and Update Section -->
+      <div class="character-selection">
+        <label for="character_id">Select Character:</label>
+        <select id="character_id" name="character_id" onchange="loadCharacterData(true)">
+          <!-- Options will be populated dynamically from the database -->
+        </select>
+      </div>
+
+      <label for="voice_id">Voice ID:</label>
+      <input type="text" id="voice_id" name="voice_id" />
+
+      <label for="prompt">Prompt:</label>
+      <textarea id="prompt" name="prompt"></textarea>
+
+      <button type="submit" id="configSubmit" disabled>
+        Save Configuration
+      </button>
+    </form>
+
+    <hr />
+
+    <h2>Add New Character</h2>
+    <form id="characterForm" action="/add-character" method="post"
+      onsubmit="handleSubmit(event, 'New character added successfully!')">
+      <label for="new_character_id">Character ID (e.g., cat-cartman):</label>
+      <input type="text" id="new_character_id" name="new_character_id" />
+
+      <label for="new_voice_id">Voice ID:</label>
+      <input type="text" id="new_voice_id" name="new_voice_id" />
+
+      <label for="new_prompt">Prompt:</label>
+      <textarea id="new_prompt" name="new_prompt"></textarea>
+
+      <button type="submit" disabled>Add New Character</button>
+    </form>
+  </div>
+</body>
+
 </html>
