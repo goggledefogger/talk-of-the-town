@@ -4,6 +4,7 @@ import openai
 import os
 from dotenv import load_dotenv
 import re
+import logging
 from colorama import Fore, Style, init
 from pydub import AudioSegment
 from pydub.playback import play
@@ -83,7 +84,7 @@ def text_to_speech(text, voice_id, playback):
     try:
         playback.stop()
     except:
-        print('error stopping playback')
+        logging.error('error stopping playback')
     status = 'speaking'
     if response.status_code == 200:
         with open('output.mp3', 'wb') as f:
@@ -91,7 +92,7 @@ def text_to_speech(text, voice_id, playback):
         audio = AudioSegment.from_mp3('output.mp3')
         play(audio)
     else:
-        print('Error:', response.text)
+        logging.error('Error:', response.text)
     status = 'done_speaking'
 
 def print_colored(agent, text):
@@ -104,11 +105,11 @@ def print_colored(agent, text):
 def record_and_transcribe(playback, duration=8, fs=sample_rate):
     global status
     status = "recording"
-    print('Recording...')
+    logging.info('Recording...')
     myrecording = sd.rec(int(duration * fs), samplerate=fs, channels=num_channels)
     sd.wait()
     status = "transcribing"
-    print('Recording complete.')
+    logging.info('Recording complete.')
     playback = play_waiting_music()
     filename = 'myrecording.wav'
     sf.write(filename, myrecording, fs)
@@ -118,8 +119,9 @@ def record_and_transcribe(playback, duration=8, fs=sample_rate):
     transcription = result['text']
     return transcription, playback
 
-def start_talking():
-    character_data = get_current_character_data()
+def start_talking(character_id=None):
+    character_data = get_current_character_data(character_id)
+    # logging.info('character data: ' + str(character_data))
 
     while is_conversation_active():
         playback = None
