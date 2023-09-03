@@ -1,6 +1,7 @@
 import os
 import openai
 
+system_message = "abstract character"
 
 def generate_image(prompt, save_path):
     """
@@ -15,7 +16,7 @@ def generate_image(prompt, save_path):
     """
     response = openai.Image.create(
         model="image-alpha-001",
-        prompt=prompt,
+        prompt=system_message + ": " + prompt,
         n=1,  # Number of images to generate
         size="256x256",  # Image size
         response_format="url"  # Get the image URL
