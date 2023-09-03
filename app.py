@@ -4,7 +4,7 @@ import json
 import logging
 import threading
 
-from database import update_character_data, get_data, update_data, delete_character_data
+from database import update_character_data, get_data, update_data, delete_character_data, set_current_character, create_character
 from talk import start_talking, is_conversation_active, set_conversation_state, get_status
 from generate_image import generate_image
 from eleven_labs import get_random_voice_id
@@ -61,19 +61,8 @@ def add_character():
     if not new_voice_id:
         new_voice_id = get_random_voice_id()
 
-    # Load the existing data from database.json
-    with open('database.json', 'r') as file:
-        data = json.load(file)
-
-    # Add the new character data
-    data['characters'][new_character_id] = {
-        "voice_id": new_voice_id,
-        "prompt": new_prompt
-    }
-
-    # Save the updated data back to database.json
-    with open('database.json', 'w') as file:
-        json.dump(data, file, indent=4)
+    create_character(new_character_id, new_voice_id, new_prompt)
+    set_current_character(new_character_id)
 
     generate_image(new_prompt, f"character_images/{new_character_id}.png")
 
