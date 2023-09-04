@@ -1,3 +1,41 @@
+// Connect to the Flask-SocketIO server
+const host = window.location.hostname;
+const socket = io.connect('http://' + host + ':5002');
+let serverStatus = null;
+
+// Listen for the 'status_update' event
+socket.on('status_update', function (data) {
+  console.log('Received status update:', data.status);
+  updateUI(data);
+});
+
+// Listen for the 'conversation_status_update' event
+socket.on('conversation_update', function (data) {
+  console.log('Received conversation update:', data.conversation_state);
+  updateUI(data);
+});
+
+socket.on('connect_error', function (error) {
+  console.error('Connection Error:', error);
+  updateUI({ status: 'server_error' });
+});
+
+socket.on('connect_timeout', function () {
+  console.error('Connection Timeout');
+  updateUI({ status: 'server_timeout' });
+});
+
+socket.on('reconnect_error', function (error) {
+  console.error('Reconnection Error:', error);
+  updateUI({ status: 'server_error' });
+});
+
+socket.on('reconnect_failed', function () {
+  console.error('Reconnection Failed');
+  updateUI({ status: 'server_error' });
+});
+
+
 let characterDataGlobal = {}; // This will store the fetched character data
 
 // Function to load character data from the Flask API
@@ -209,7 +247,6 @@ function deleteCharacter(characterId) {
 
 function startConversation() {
   const characterId = document.getElementById('character_id').value;
-  checkServerStatus();
   fetch('/start-conversation', {
     method: 'POST',
     headers: {
@@ -218,17 +255,10 @@ function startConversation() {
     body: JSON.stringify({ character_id: characterId }),
   })
     .then((response) => response.json())
-    .then((data) => {
-      checkServerStatus();
-      if (data.status === 'started') {
-        document.getElementById('startConversationBtn').disabled = true;
-        document.getElementById('stopConversationBtn').disabled = false;
-      }
-    });
+    .then(updateUI);
 }
 
 function stopConversation() {
-  checkServerStatus();
   fetch('/stop-conversation', {
     method: 'POST',
     headers: {
@@ -236,13 +266,7 @@ function stopConversation() {
     },
   })
     .then((response) => response.json())
-    .then((data) => {
-      checkServerStatus();
-      if (data.status === 'stopped') {
-        document.getElementById('startConversationBtn').disabled = false;
-        document.getElementById('stopConversationBtn').disabled = true;
-      }
-    });
+    .then(updateUI);
 }
 
 function regenerateCharacterImage() {
@@ -280,20 +304,20 @@ function hideLoader() {
   document.getElementById('dimmedBackground').style.display = 'none';
 }
 
-function checkServerStatus() {
-  fetch('/status')
-    .then((response) => response.json())
-    .then((data) => {
-      document.getElementById('serverStatus').innerText = data.status;
-      const viewState = {
-        status: data.status,
-      };
-      updateUI(viewState);
-    })
-    .catch((error) => {
-      document.getElementById('serverStatus').innerText = 'SERVER ERROR';
-    });
-}
+// function checkServerStatus() {
+//   fetch('/status')
+//     .then((response) => response.json())
+//     .then((data) => {
+//       document.getElementById('serverStatus').innerText = data.status;
+//       const viewState = {
+//         status: data.status,
+//       };
+//       updateUI(viewState);
+//     })
+//     .catch((error) => {
+//       document.getElementById('serverStatus').innerText = 'SERVER ERROR';
+//     });
+// }
 
 const animationClasses = [
   'not-started',
@@ -303,62 +327,64 @@ const animationClasses = [
   'getting-ready',
   'speaking',
   'done-speaking',
+  'error'
 ];
 
 function updateUI(viewState) {
-  const characterImage = document.getElementById('characterImage');
-  let currentClass = 'not-started';
-  switch (viewState.status) {
-    // cases for each of these statuses:
-    // not yet started, recording, transcribing,
-    // thinking, getting ready to speak, speaking, done speaking
-    case 'recording':
-      currentClass = 'recording';
-      stopSpeakingAnimation();
-      break;
-    case 'transcribing':
-      currentClass = 'transcribing';
-      break;
-    case 'generating_response':
-      currentClass = 'thinking';
-      break;
-    case 'finished_generating_response':
-      currentClass = 'getting-ready';
-      break;
-    case 'synthesizing_voice':
-      currentClass = 'getting-ready';
-      break;
-    case 'speaking':
-      currentClass = 'animated-mouth';
-      startSpeakingAnimation();
-      break;
-    case 'done_speaking':
-      currentClass = 'done-speaking';
-      stopSpeakingAnimation();
-      break;
-    default:
-      currentClass = 'not-started';
-  }
-  characterImage.classList.remove(...animationClasses);
-
-  // Add the current class
-  characterImage.classList.add(currentClass);
-}
-
-let serverStatusInterval = null;
-
-function startPollingServerStatus() {
-  // Clear any existing interval
-  if (serverStatusInterval) {
-    clearInterval(serverStatusInterval);
+  if (viewState.conversation_state === 'started') {
+    console.log('conversation state:', viewState.conversation_state);
+    document.getElementById('startConversationBtn').disabled = true;
+    document.getElementById('stopConversationBtn').disabled = false;
+  } else if (viewState.conversation_state === 'stopped') {
+    console.log('conversation state:', viewState.conversation_state);
+    document.getElementById('startConversationBtn').disabled = false;
+    document.getElementById('stopConversationBtn').disabled = true;
   }
 
-  // Start a new interval to check the server status every 5 seconds
-  serverStatusInterval = setInterval(checkServerStatus, 5000);
-}
+  if (viewState.status) {
+    console.log('status:', viewState.status);
+    document.getElementById('serverStatus').innerText = viewState.status;
 
-// Start the polling when the page loads
-document.addEventListener('DOMContentLoaded', (event) => {
-  checkServerStatus();
-  startPollingServerStatus();
-});
+    const characterImage = document.getElementById('characterImage');
+    let currentClass = 'not-started';
+    switch (viewState.status) {
+      // cases for each of these statuses:
+      // not yet started, recording, transcribing,
+      // thinking, getting ready to speak, speaking, done speaking
+      case 'recording':
+        currentClass = 'recording';
+        stopSpeakingAnimation();
+        break;
+      case 'transcribing':
+        currentClass = 'transcribing';
+        break;
+      case 'generating_response':
+        currentClass = 'thinking';
+        break;
+      case 'finished_generating_response':
+        currentClass = 'getting-ready';
+        break;
+      case 'synthesizing_voice':
+        currentClass = 'getting-ready';
+        break;
+      case 'speaking':
+        currentClass = 'animated-mouth';
+        startSpeakingAnimation();
+        break;
+      case 'done_speaking':
+        currentClass = 'done-speaking';
+        stopSpeakingAnimation();
+        break;
+      case 'error_text_to_speech':
+        currentClass = 'error';
+        stopSpeakingAnimation();
+        break;
+      default:
+        currentClass = 'not-started';
+    }
+    characterImage.classList.remove(...animationClasses);
+
+    // Add the current class
+    characterImage.classList.add(currentClass);
+  }
+}
