@@ -10,26 +10,40 @@ from pydub import AudioSegment
 from pydub.playback import play
 from pydub.playback import _play_with_simpleaudio
 
+
 from database import get_current_character_data, get_system_prompt
 from audio_device import get_default_audio_input_device, get_device_metadata
 from eleven_labs import get_speech_audio
+from socket_controller import socketio, emit_status, emit_conversation_state
 
-conversation_active = False
-status = 'not_started'
+logging.basicConfig(level=logging.INFO)
+
+conversation_state = 'init'
 
 init()
+
+def set_status(new_status):
+    global status
+    status = new_status
+    logging.info('status: ' + status)
+    emit_status(new_status)
+
+set_status('not_started')
 
 def get_status():
     global status
     return status
 
 def is_conversation_active():
-    global conversation_active
-    return conversation_active
+    global conversation_state
+    emit_conversation_state(conversation_state)
+    return conversation_state == 'started'
 
-def set_conversation_state(state: bool):
-    global conversation_active
-    conversation_active = state
+def set_conversation_state(state):
+    global conversation_state
+    conversation_state = state
+    logging.info('conversation state: ' + str(conversation_state))
+    emit_conversation_state(conversation_state)
 
 def open_file(filepath):
     with open(filepath, 'r', encoding='utf-8') as infile:
@@ -53,8 +67,7 @@ sample_rate = int(device_metadata['sample_rate'])
 
 
 def chatgpt(api_key, conversation, character_data, user_input, temperature=0.9, frequency_penalty=0.2, presence_penalty=0):
-    global status
-    status = 'generating_response'
+    set_status('generating_response')
     openai.api_key = api_key
     conversation.append({"role": "user","content": user_input})
     messages_input = conversation.copy()
@@ -68,7 +81,7 @@ def chatgpt(api_key, conversation, character_data, user_input, temperature=0.9, 
         messages=messages_input)
     chat_response = completion['choices'][0]['message']['content']
     conversation.append({"role": "assistant", "content": chat_response})
-    status = 'finished_generating_response'
+    set_status('finished_generating_response')
     return chat_response
 
 
@@ -78,14 +91,13 @@ def play_waiting_music():
 
 
 def text_to_speech(text, voice_id, playback):
-    global status
-    status = 'synthesizing_voice'
+    set_status('synthesizing_voice')
     response = get_speech_audio(text, voice_id)
     try:
         playback.stop()
     except:
         logging.error('error stopping playback')
-    status = 'speaking'
+    set_status('speaking')
     if response.status_code == 200:
         with open('output.mp3', 'wb') as f:
             f.write(response.content)
@@ -93,7 +105,7 @@ def text_to_speech(text, voice_id, playback):
         play(audio)
     else:
         logging.error('Error:', response.text)
-    status = 'done_speaking'
+    set_status('done_speaking')
 
 def print_colored(agent, text):
     agent_colors = {
@@ -103,12 +115,11 @@ def print_colored(agent, text):
     print(color + f"{agent}: {text}" + Style.RESET_ALL, end="")
 
 def record_and_transcribe(playback, duration=8, fs=sample_rate):
-    global status
-    status = "recording"
+    set_status("recording")
     logging.info('Recording...')
     myrecording = sd.rec(int(duration * fs), samplerate=fs, channels=num_channels)
     sd.wait()
-    status = "transcribing"
+    set_status("transcribing")
     logging.info('Recording complete.')
     playback = play_waiting_music()
     filename = 'myrecording.wav'

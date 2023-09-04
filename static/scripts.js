@@ -1,3 +1,40 @@
+// Connect to the Flask-SocketIO server
+const socket = io.connect('http://localhost:5002');
+let serverStatus = null;
+
+// Listen for the 'status_update' event
+socket.on('status_update', function (data) {
+  console.log('Received status update:', data.status);
+  updateUI(data);
+});
+
+// Listen for the 'conversation_status_update' event
+socket.on('conversation_update', function (data) {
+  console.log('Received conversation update:', data.conversation_active);
+  updateUI(data);
+});
+
+socket.on('connect_error', function (error) {
+  console.error('Connection Error:', error);
+  updateUI({ status: 'server_error' });
+});
+
+socket.on('connect_timeout', function () {
+  console.error('Connection Timeout');
+  updateUI({ status: 'server_timeout' });
+});
+
+socket.on('reconnect_error', function (error) {
+  console.error('Reconnection Error:', error);
+  updateUI({ status: 'server_error' });
+});
+
+socket.on('reconnect_failed', function () {
+  console.error('Reconnection Failed');
+  updateUI({ status: 'server_error' });
+});
+
+
 let characterDataGlobal = {}; // This will store the fetched character data
 
 // Function to load character data from the Flask API
@@ -209,7 +246,6 @@ function deleteCharacter(characterId) {
 
 function startConversation() {
   const characterId = document.getElementById('character_id').value;
-  checkServerStatus();
   fetch('/start-conversation', {
     method: 'POST',
     headers: {
@@ -218,17 +254,10 @@ function startConversation() {
     body: JSON.stringify({ character_id: characterId }),
   })
     .then((response) => response.json())
-    .then((data) => {
-      checkServerStatus();
-      if (data.status === 'started') {
-        document.getElementById('startConversationBtn').disabled = true;
-        document.getElementById('stopConversationBtn').disabled = false;
-      }
-    });
+    .then(updateUI);
 }
 
 function stopConversation() {
-  checkServerStatus();
   fetch('/stop-conversation', {
     method: 'POST',
     headers: {
@@ -236,13 +265,7 @@ function stopConversation() {
     },
   })
     .then((response) => response.json())
-    .then((data) => {
-      checkServerStatus();
-      if (data.status === 'stopped') {
-        document.getElementById('startConversationBtn').disabled = false;
-        document.getElementById('stopConversationBtn').disabled = true;
-      }
-    });
+    .then(updateUI);
 }
 
 function regenerateCharacterImage() {
@@ -280,20 +303,20 @@ function hideLoader() {
   document.getElementById('dimmedBackground').style.display = 'none';
 }
 
-function checkServerStatus() {
-  fetch('/status')
-    .then((response) => response.json())
-    .then((data) => {
-      document.getElementById('serverStatus').innerText = data.status;
-      const viewState = {
-        status: data.status,
-      };
-      updateUI(viewState);
-    })
-    .catch((error) => {
-      document.getElementById('serverStatus').innerText = 'SERVER ERROR';
-    });
-}
+// function checkServerStatus() {
+//   fetch('/status')
+//     .then((response) => response.json())
+//     .then((data) => {
+//       document.getElementById('serverStatus').innerText = data.status;
+//       const viewState = {
+//         status: data.status,
+//       };
+//       updateUI(viewState);
+//     })
+//     .catch((error) => {
+//       document.getElementById('serverStatus').innerText = 'SERVER ERROR';
+//     });
+// }
 
 const animationClasses = [
   'not-started',
@@ -306,6 +329,20 @@ const animationClasses = [
 ];
 
 function updateUI(viewState) {
+  console.log('conversation state:', viewState.conversation_state);
+  if (viewState.conversation_state === 'started') {
+    document.getElementById('startConversationBtn').disabled = false;
+    document.getElementById('stopConversationBtn').disabled = true;
+  } else if (viewState.conversation_state === 'stopped') {
+    document.getElementById('startConversationBtn').disabled = true;
+    document.getElementById('stopConversationBtn').disabled = false;
+  }
+
+  console.log('status:', viewState.status);
+  if (viewState.status) {
+    document.getElementById('serverStatus').innerText = viewState.status;
+  }
+
   const characterImage = document.getElementById('characterImage');
   let currentClass = 'not-started';
   switch (viewState.status) {
@@ -344,21 +381,3 @@ function updateUI(viewState) {
   // Add the current class
   characterImage.classList.add(currentClass);
 }
-
-let serverStatusInterval = null;
-
-function startPollingServerStatus() {
-  // Clear any existing interval
-  if (serverStatusInterval) {
-    clearInterval(serverStatusInterval);
-  }
-
-  // Start a new interval to check the server status every 5 seconds
-  serverStatusInterval = setInterval(checkServerStatus, 5000);
-}
-
-// Start the polling when the page loads
-document.addEventListener('DOMContentLoaded', (event) => {
-  checkServerStatus();
-  startPollingServerStatus();
-});
