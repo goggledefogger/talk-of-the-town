@@ -16,6 +16,7 @@ from database import get_current_character_data, get_system_prompt
 from audio_device import get_default_audio_input_device, get_device_metadata
 from eleven_labs import get_speech_audio
 from socket_controller import socketio, emit_status, emit_conversation_state
+from google_text_to_speech import google_text_to_speech
 
 logging.basicConfig(level=logging.INFO)
 
@@ -100,19 +101,26 @@ def text_to_speech(text, voice_id, playback):
         logging.error('error stopping playback')
     set_status('speaking')
     if response.status_code == 200:
-        with open('output.mp3', 'wb') as f:
-            f.write(response.content)
-        audio = AudioSegment.from_mp3('output.mp3')
-        play(audio)
+        play_audio_file('output.mp3')
         set_status('done_speaking')
     else:
         logging.error('Error:', response.text)
         set_status('error_text_to_speech')
-        logging.info('continuing on to use espeak as a fallback')
-        # since the eleven labs response had an error,
-        # we'll just play the text-to-speech using espeak
-        subprocess.run(["espeak", text])
+        logging.info('continuing on to use google cloud as a fallback')
+        try:
+            google_text_to_speech(text)
+            play_audio_file('output.mp3')
+        except:
+            logging.error('error using google cloud')
+            logging.info('continuing on to use espeak as a fallback')
+            # since the eleven labs response had an error,
+            # we'll just play the text-to-speech using espeak
+            subprocess.run(["espeak", text])
         set_status('done_speaking')
+
+def play_audio_file(filepath):
+    audio = AudioSegment.from_mp3('output.mp3')
+    play(audio)
 
 
 def print_colored(agent, text):
