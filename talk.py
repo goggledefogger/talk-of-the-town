@@ -10,6 +10,7 @@ from pydub import AudioSegment
 from pydub.playback import play
 from pydub.playback import _play_with_simpleaudio
 import time
+import subprocess
 
 from database import get_current_character_data, get_system_prompt
 from audio_device import get_default_audio_input_device, get_device_metadata
@@ -107,6 +108,10 @@ def text_to_speech(text, voice_id, playback):
     else:
         logging.error('Error:', response.text)
         set_status('error_text_to_speech')
+        logging.info('continuing on to use espeak as a fallback')
+        # since the eleven labs response had an error,
+        # we'll just play the text-to-speech using espeak
+        subprocess.run(["espeak", text])
 
 
 def print_colored(agent, text):
