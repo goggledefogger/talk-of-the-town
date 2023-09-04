@@ -377,7 +377,6 @@ function updateUI(viewState) {
         break;
       case 'error_text_to_speech':
         currentClass = 'error';
-        stopSpeakingAnimation();
         break;
       default:
         currentClass = 'not-started';
