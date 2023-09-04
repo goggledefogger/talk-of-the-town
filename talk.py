@@ -92,22 +92,22 @@ def play_waiting_music():
 
 def text_to_speech(text, voice_id, playback):
     set_status('synthesizing_voice')
-    # response = get_speech_audio(text, voice_id)
-    # try:
-    #     playback.stop()
-    # except:
-    #     logging.error('error stopping playback')
-    time.sleep(2)
+    response = get_speech_audio(text, voice_id)
+    try:
+        playback.stop()
+    except:
+        logging.error('error stopping playback')
     set_status('speaking')
-    # if response.status_code == 200:
-    #     with open('output.mp3', 'wb') as f:
-    #         f.write(response.content)
-    #     audio = AudioSegment.from_mp3('output.mp3')
-    #     play(audio)
-    # else:
-    #     logging.error('Error:', response.text)
-    time.sleep(5)
-    set_status('done_speaking')
+    if response.status_code == 200:
+        with open('output.mp3', 'wb') as f:
+            f.write(response.content)
+        audio = AudioSegment.from_mp3('output.mp3')
+        play(audio)
+        set_status('done_speaking')
+    else:
+        logging.error('Error:', response.text)
+        set_status('error_text_to_speech')
+
 
 def print_colored(agent, text):
     agent_colors = {
@@ -119,21 +119,22 @@ def print_colored(agent, text):
 def record_and_transcribe(playback, duration=8, fs=sample_rate):
     set_status("recording")
     logging.info('Recording...')
-    time.sleep(2)
-    # myrecording = sd.rec(int(duration * fs), samplerate=fs, channels=num_channels)
-    # sd.wait()
+    myrecording = sd.rec(int(duration * fs), samplerate=fs, channels=num_channels)
+    # previously used sd.wait() but that had a threading problem
+    # with the socketio emit so now we're doing it this way
+    time.sleep(duration)
+    sd.stop()
+
     set_status("transcribing")
     logging.info('Recording complete.')
-    time.sleep(2)
     playback = play_waiting_music()
-    # filename = 'myrecording.wav'
-    # sf.write(filename, myrecording, fs)
-    # with open(filename, "rb") as file:
-    #     openai.api_key = api_key
-    #     result = openai.Audio.transcribe("whisper-1", file)
-    # transcription = result['text']
-    # return transcription, playback
-    return "Hello", playback
+    filename = 'myrecording.wav'
+    sf.write(filename, myrecording, fs)
+    with open(filename, "rb") as file:
+        openai.api_key = api_key
+        result = openai.Audio.transcribe("whisper-1", file)
+    transcription = result['text']
+    return transcription, playback
 
 def start_talking(character_id=None):
     character_data = get_current_character_data(character_id)
@@ -141,6 +142,11 @@ def start_talking(character_id=None):
 
     while is_conversation_active():
         playback = None
+        # q = Queue()
+        # p = Process(target=record_and_transcribe, args=(q, playback))
+        # p.start()
+        # p.join()
+        # user_message, playback = q.get()
         user_message, playback = record_and_transcribe(playback)
         response = chatgpt(api_key, conversation1, character_data, user_message)
         print_colored("ChatBot:", f"{response}\n\n")
