@@ -4,7 +4,7 @@ Talk of the Town is an interactive voice-based chatbot that integrates with GPT-
 
 ## Overview
 
-This project provides a web-based interface where users can interact with virtual characters. Each character has a unique voice and a generative art image associated with it. The interactions are powered by OpenAI's GPT-3 Turbo, and the voices are generated using Eleven Labs' API. The generative art images for each character are created using OpenAI's DALL-E.
+This project provides a web-based interface where users can interact with virtual characters. Each character has a unique voice and a generative art image associated with it. The interactions are powered by OpenAI's GPT-3 Turbo, and the voices are generated using Eleven Labs' API. The generative art images for each character are created using OpenAI's DALL-E. Real-time communication between the frontend and backend is facilitated using Socket.io, ensuring a smooth and responsive user experience.
 
 ## Installation
 
@@ -48,14 +48,14 @@ Ensure you keep these keys confidential and do not expose them publicly.
 
 ## Usage
 
-1. Start the Flask server:
+1. Start the Flask server with Socket.io support:
    ```bash
    python app.py
    ```
 
-2. Open a web browser and navigate to `http://localhost:5002/`.
+2. Open a web browser and navigate to `http://localhost:5002/` or the IP address of the machine running the server if accessing from another device.
 
-3. Interact with the virtual characters, change their voices, and enjoy the experience!
+3. Interact with the virtual characters, change their voices, and enjoy the experience! The real-time status of the server and conversation can be monitored via the web interface, thanks to the Socket.io integration.
 
 ## Credits
 
