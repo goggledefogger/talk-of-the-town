@@ -2,16 +2,22 @@ from flask import Flask, request, jsonify, render_template, send_from_directory
 from pubsub import pub
 import json
 import logging
-import threading
+import eventlet
+
+eventlet.monkey_patch()
 
 from database import update_character_data, get_data, update_data, delete_character_data, set_current_character, create_character
 from talk import start_talking, is_conversation_active, set_conversation_state, get_status
 from generate_image import generate_image
 from eleven_labs import get_random_voice_id
+from socket_controller import socketio, set_app
 
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
+
+socketio.init_app(app)
+socket_controller = set_app(app)
 
 @app.route('/')
 @app.route('/index.html')
@@ -24,21 +30,20 @@ def start_conversation_endpoint():
     character_id = data.get('character_id')
 
     if not is_conversation_active():
-        set_conversation_state(True)
+        set_conversation_state('started')
         # Start a new thread for the conversation to allow other requests to be processed
-        args = { 'character_id': character_id }
-        threading.Thread(target=initiate_conversation, kwargs=args).start()
-        return jsonify({'status': 'started'})
-    return jsonify({'status': 'error'})
+        args = character_id
+        eventlet.spawn(initiate_conversation, args)
+        return jsonify({'conversation_state': 'started'})
+    return jsonify({'conversation_state': 'error'})
 
 @app.route('/stop-conversation', methods=['POST'])
 def stop_conversation_endpoint():
-    set_conversation_state(False)
-    return jsonify({'status': 'stopped'})
+    set_conversation_state('stopped')
+    return jsonify({'conversation_state': 'stopped'})
 
 def initiate_conversation(character_id=None):
     logging.info('character_id: ' + str(character_id))
-    logging.info('Starting conversation...' + str(is_conversation_active()))
     if is_conversation_active():
         start_talking(character_id)  # Call the function from talk.py
 
@@ -163,6 +168,5 @@ def get_server_status():
     }, 200
 
 
-
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5002, debug=True)
+    socketio.run(app, host="0.0.0.0", port=5002, debug=True)

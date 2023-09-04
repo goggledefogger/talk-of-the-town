@@ -331,7 +331,6 @@ button:hover {
     filter: sepia(0.5);
 }
 
-
 @keyframes bounce {
     0% {
         transform: scale(1.1);
@@ -348,4 +347,8 @@ button:hover {
 
 .done-speaking {
     animation: bounce 0.5s;
+}
+
+.error {
+    filter: sepia(1);
 }
