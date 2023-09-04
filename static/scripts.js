@@ -1,5 +1,6 @@
 // Connect to the Flask-SocketIO server
-const socket = io.connect('http://localhost:5002');
+const host = window.location.hostname;
+const socket = io.connect('http://' + host + ':5002');
 let serverStatus = null;
 
 // Listen for the 'status_update' event
@@ -326,6 +327,7 @@ const animationClasses = [
   'getting-ready',
   'speaking',
   'done-speaking',
+  'error'
 ];
 
 function updateUI(viewState) {
@@ -342,43 +344,47 @@ function updateUI(viewState) {
   if (viewState.status) {
     console.log('status:', viewState.status);
     document.getElementById('serverStatus').innerText = viewState.status;
-  }
 
-  const characterImage = document.getElementById('characterImage');
-  let currentClass = 'not-started';
-  switch (viewState.status) {
-    // cases for each of these statuses:
-    // not yet started, recording, transcribing,
-    // thinking, getting ready to speak, speaking, done speaking
-    case 'recording':
-      currentClass = 'recording';
-      stopSpeakingAnimation();
-      break;
-    case 'transcribing':
-      currentClass = 'transcribing';
-      break;
-    case 'generating_response':
-      currentClass = 'thinking';
-      break;
-    case 'finished_generating_response':
-      currentClass = 'getting-ready';
-      break;
-    case 'synthesizing_voice':
-      currentClass = 'getting-ready';
-      break;
-    case 'speaking':
-      currentClass = 'animated-mouth';
-      startSpeakingAnimation();
-      break;
-    case 'done_speaking':
-      currentClass = 'done-speaking';
-      stopSpeakingAnimation();
-      break;
-    default:
-      currentClass = 'not-started';
-  }
-  characterImage.classList.remove(...animationClasses);
+    const characterImage = document.getElementById('characterImage');
+    let currentClass = 'not-started';
+    switch (viewState.status) {
+      // cases for each of these statuses:
+      // not yet started, recording, transcribing,
+      // thinking, getting ready to speak, speaking, done speaking
+      case 'recording':
+        currentClass = 'recording';
+        stopSpeakingAnimation();
+        break;
+      case 'transcribing':
+        currentClass = 'transcribing';
+        break;
+      case 'generating_response':
+        currentClass = 'thinking';
+        break;
+      case 'finished_generating_response':
+        currentClass = 'getting-ready';
+        break;
+      case 'synthesizing_voice':
+        currentClass = 'getting-ready';
+        break;
+      case 'speaking':
+        currentClass = 'animated-mouth';
+        startSpeakingAnimation();
+        break;
+      case 'done_speaking':
+        currentClass = 'done-speaking';
+        stopSpeakingAnimation();
+        break;
+      case 'error_text_to_speech':
+        currentClass = 'error';
+        stopSpeakingAnimation();
+        break;
+      default:
+        currentClass = 'not-started';
+    }
+    characterImage.classList.remove(...animationClasses);
 
-  // Add the current class
-  characterImage.classList.add(currentClass);
+    // Add the current class
+    characterImage.classList.add(currentClass);
+  }
 }
