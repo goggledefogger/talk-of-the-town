@@ -1,0 +1,33 @@
+<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background circle -->
+    <circle cx="50" cy="50" r="48" fill="#34495E" stroke="#2C3E50" stroke-width="2"/>
+    <!-- Amorphous character shape -->
+    <path d="M 10 50 Q 50 10 90 50 Q 50 90 10 50" fill="#58B19F"/>
+    <!-- Eyes -->
+    <circle cx="35" cy="40" r="6" fill="#2C3E50"/>
+    <circle cx="65" cy="40" r="6" fill="#2C3E50"/>
+    <!-- Eyebrows -->
+    <line x1="25" y1="30" x2="45" y2="30" stroke="#2C3E50" stroke-width="3"/>
+    <line x1="55" y1="30" x2="75" y2="30" stroke="#2C3E50" stroke-width="3"/>
+    <!-- Ears -->
+    <ellipse cx="10" cy="50" rx="5" ry="10" fill="#58B19F" stroke="#2C3E50" stroke-width="2"/>
+    <ellipse cx="90" cy="50" rx="5" ry="10" fill="#58B19F" stroke="#2C3E50" stroke-width="2"/>
+    <!-- Wavy mouth (sine wave) with multiple colors -->
+    <path d="M 30 60 Q 40 70 50 60 T 70 60" stroke="#E74C3C" fill="transparent" stroke-width="4">
+        <animate attributeName="d" dur="0.5s" repeatCount="indefinite"
+                 values="M 30 60 Q 40 70 50 60 T 70 60; M 30 65 Q 40 90 50 65 T 70 65; M 30 60 Q 40 70 50 60 T 70 60"/>
+    </path>
+    <path d="M 30 60 Q 40 50 50 60 T 70 60" stroke="#3498DB" fill="transparent" stroke-width="4">
+        <animate attributeName="d" dur="0.5s" repeatCount="indefinite"
+                 values="M 30 60 Q 40 50 50 60 T 70 60; M 30 55 Q 40 30 50 55 T 70 55; M 30 60 Q 40 50 50 60 T 70 60"/>
+    </path>
+    <!-- Crazy Hat with added details -->
+    <path d="M 20 5 Q 50 -15 80 5 Q 60 15 40 15 Z" fill="#3498DB" stroke="#2980B9" stroke-width="2"/>
+    <circle cx="50" cy="5" r="5" fill="#E74C3C"/>
+    <circle cx="30" cy="5" r="3" fill="#E74C3C"/>
+    <circle cx="70" cy="5" r="3" fill="#E74C3C"/>
+    <!-- Foreground shapes -->
+    <circle cx="25" cy="85" r="5" fill="#F39C12"/>
+    <circle cx="75" cy="85" r="5" fill="#F39C12"/>
+    <rect x="40" y="90" width="20" height="8" fill="#3498DB"/>
+</svg>

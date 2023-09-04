@@ -5,7 +5,7 @@ import json
 import logging
 import threading
 
-from database import update_character_data, get_data, update_data, delete_character_data
+from database import update_character_data, get_data, update_data, delete_character_data, set_current_character, create_character
 from talk import start_talking, is_conversation_active, set_conversation_state, get_status
 from generate_image import generate_image
 from eleven_labs import get_random_voice_id
@@ -24,10 +24,14 @@ def index():
 
 @app.route('/start-conversation', methods=['POST'])
 def start_conversation_endpoint():
+    data = request.json
+    character_id = data.get('character_id')
+
     if not is_conversation_active():
         set_conversation_state(True)
         # Start a new thread for the conversation to allow other requests to be processed
-        threading.Thread(target=initiate_conversation).start()
+        args = { 'character_id': character_id }
+        threading.Thread(target=initiate_conversation, kwargs=args).start()
         return jsonify({'status': 'started'})
     return jsonify({'status': 'error'})
 
@@ -36,10 +40,11 @@ def stop_conversation_endpoint():
     set_conversation_state(False)
     return jsonify({'status': 'stopped'})
 
-def initiate_conversation():
+def initiate_conversation(character_id=None):
+    logging.info('character_id: ' + str(character_id))
     logging.info('Starting conversation...' + str(is_conversation_active()))
     if is_conversation_active():
-        start_talking()  # Call the function from talk.py
+        start_talking(character_id)  # Call the function from talk.py
 
 
 # get the character data from the database
@@ -60,19 +65,8 @@ def add_character():
     if not new_voice_id:
         new_voice_id = get_random_voice_id()
 
-    # Load the existing data from database.json
-    with open('database.json', 'r') as file:
-        data = json.load(file)
-
-    # Add the new character data
-    data['characters'][new_character_id] = {
-        "voice_id": new_voice_id,
-        "prompt": new_prompt
-    }
-
-    # Save the updated data back to database.json
-    with open('database.json', 'w') as file:
-        json.dump(data, file, indent=4)
+    create_character(new_character_id, new_voice_id, new_prompt)
+    set_current_character(new_character_id)
 
     generate_image(new_prompt, f"character_images/{new_character_id}.png")
 

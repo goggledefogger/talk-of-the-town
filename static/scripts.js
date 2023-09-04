@@ -208,12 +208,14 @@ function deleteCharacter(characterId) {
 }
 
 function startConversation() {
+  const characterId = document.getElementById('character_id').value;
   checkServerStatus();
   fetch('/start-conversation', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
+    body: JSON.stringify({ character_id: characterId }),
   })
     .then((response) => response.json())
     .then((data) => {
@@ -283,10 +285,64 @@ function checkServerStatus() {
     .then((response) => response.json())
     .then((data) => {
       document.getElementById('serverStatus').innerText = data.status;
+      const viewState = {
+        status: data.status,
+      };
+      updateUI(viewState);
     })
     .catch((error) => {
       document.getElementById('serverStatus').innerText = 'SERVER ERROR';
     });
+}
+
+const animationClasses = [
+  'not-started',
+  'recording',
+  'transcribing',
+  'thinking',
+  'getting-ready',
+  'speaking',
+  'done-speaking',
+];
+
+function updateUI(viewState) {
+  const characterImage = document.getElementById('characterImage');
+  let currentClass = 'not-started';
+  switch (viewState.status) {
+    // cases for each of these statuses:
+    // not yet started, recording, transcribing,
+    // thinking, getting ready to speak, speaking, done speaking
+    case 'recording':
+      currentClass = 'recording';
+      stopSpeakingAnimation();
+      break;
+    case 'transcribing':
+      currentClass = 'transcribing';
+      break;
+    case 'generating_response':
+      currentClass = 'thinking';
+      break;
+    case 'finished_generating_response':
+      currentClass = 'getting-ready';
+      break;
+    case 'synthesizing_voice':
+      currentClass = 'getting-ready';
+      break;
+    case 'speaking':
+      currentClass = 'animated-mouth';
+      startSpeakingAnimation();
+      break;
+    case 'done_speaking':
+      currentClass = 'done-speaking';
+      stopSpeakingAnimation();
+      break;
+    default:
+      currentClass = 'not-started';
+  }
+  characterImage.classList.remove(...animationClasses);
+
+  // Add the current class
+  characterImage.classList.add(currentClass);
 }
 
 let serverStatusInterval = null;
