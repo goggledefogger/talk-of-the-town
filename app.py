@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify, render_template, send_from_directory
 from pubsub import pub
-from flask_socketio import SocketIO
 import json
 import logging
 import threading
@@ -9,13 +8,14 @@ from database import update_character_data, get_data, update_data, delete_charac
 from talk import start_talking, is_conversation_active, set_conversation_state, get_status
 from generate_image import generate_image
 from eleven_labs import get_random_voice_id
+from socket_controller import socketio, set_app, emit_status
 
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 
-socketio = SocketIO(app)
-socketio.run(app)
+socketio.init_app(app)
+socket_controller = set_app(app)
 
 @app.route('/')
 @app.route('/index.html')
@@ -44,7 +44,9 @@ def initiate_conversation(character_id=None):
     logging.info('character_id: ' + str(character_id))
     logging.info('Starting conversation...' + str(is_conversation_active()))
     if is_conversation_active():
+        emit_status()  # Emit the status before starting the conversation
         start_talking(character_id)  # Call the function from talk.py
+        emit_status()  # Emit the status after the conversation ends
 
 
 # get the character data from the database
@@ -167,6 +169,11 @@ def get_server_status():
     }, 200
 
 
+def emit_status():
+    status = get_status()
+    logging.info('emitting status: ' + status)
+    socketio.emit('status_update', {'status': status})
+
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5002, debug=True)
+    socketio.run(app, host="0.0.0.0", port=5002, debug=True)
