@@ -1,3 +1,5 @@
+import logging
+
 from flask import Flask
 from flask_socketio import SocketIO
 
@@ -9,10 +11,10 @@ socket_app = None
 def set_app(app):
     global socket_app
     socket_app = app
-    emit_status('testing')
 
 def emit_status(status):
     if not socket_app:
+        logging.info('no socket app set')
         return
 
     with socket_app.app_context():

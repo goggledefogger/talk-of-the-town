@@ -10,7 +10,7 @@ socket.on('status_update', function (data) {
 
 // Listen for the 'conversation_status_update' event
 socket.on('conversation_update', function (data) {
-  console.log('Received conversation update:', data.conversation_active);
+  console.log('Received conversation update:', data.conversation_state);
   updateUI(data);
 });
 
@@ -329,17 +329,18 @@ const animationClasses = [
 ];
 
 function updateUI(viewState) {
-  console.log('conversation state:', viewState.conversation_state);
   if (viewState.conversation_state === 'started') {
-    document.getElementById('startConversationBtn').disabled = false;
-    document.getElementById('stopConversationBtn').disabled = true;
-  } else if (viewState.conversation_state === 'stopped') {
+    console.log('conversation state:', viewState.conversation_state);
     document.getElementById('startConversationBtn').disabled = true;
     document.getElementById('stopConversationBtn').disabled = false;
+  } else if (viewState.conversation_state === 'stopped') {
+    console.log('conversation state:', viewState.conversation_state);
+    document.getElementById('startConversationBtn').disabled = false;
+    document.getElementById('stopConversationBtn').disabled = true;
   }
 
-  console.log('status:', viewState.status);
   if (viewState.status) {
+    console.log('status:', viewState.status);
     document.getElementById('serverStatus').innerText = viewState.status;
   }
 

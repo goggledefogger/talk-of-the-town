@@ -9,7 +9,7 @@ from colorama import Fore, Style, init
 from pydub import AudioSegment
 from pydub.playback import play
 from pydub.playback import _play_with_simpleaudio
-
+import time
 
 from database import get_current_character_data, get_system_prompt
 from audio_device import get_default_audio_input_device, get_device_metadata
@@ -92,19 +92,21 @@ def play_waiting_music():
 
 def text_to_speech(text, voice_id, playback):
     set_status('synthesizing_voice')
-    response = get_speech_audio(text, voice_id)
-    try:
-        playback.stop()
-    except:
-        logging.error('error stopping playback')
+    # response = get_speech_audio(text, voice_id)
+    # try:
+    #     playback.stop()
+    # except:
+    #     logging.error('error stopping playback')
+    time.sleep(2)
     set_status('speaking')
-    if response.status_code == 200:
-        with open('output.mp3', 'wb') as f:
-            f.write(response.content)
-        audio = AudioSegment.from_mp3('output.mp3')
-        play(audio)
-    else:
-        logging.error('Error:', response.text)
+    # if response.status_code == 200:
+    #     with open('output.mp3', 'wb') as f:
+    #         f.write(response.content)
+    #     audio = AudioSegment.from_mp3('output.mp3')
+    #     play(audio)
+    # else:
+    #     logging.error('Error:', response.text)
+    time.sleep(5)
     set_status('done_speaking')
 
 def print_colored(agent, text):
@@ -117,18 +119,21 @@ def print_colored(agent, text):
 def record_and_transcribe(playback, duration=8, fs=sample_rate):
     set_status("recording")
     logging.info('Recording...')
-    myrecording = sd.rec(int(duration * fs), samplerate=fs, channels=num_channels)
-    sd.wait()
+    time.sleep(2)
+    # myrecording = sd.rec(int(duration * fs), samplerate=fs, channels=num_channels)
+    # sd.wait()
     set_status("transcribing")
     logging.info('Recording complete.')
+    time.sleep(2)
     playback = play_waiting_music()
-    filename = 'myrecording.wav'
-    sf.write(filename, myrecording, fs)
-    with open(filename, "rb") as file:
-        openai.api_key = api_key
-        result = openai.Audio.transcribe("whisper-1", file)
-    transcription = result['text']
-    return transcription, playback
+    # filename = 'myrecording.wav'
+    # sf.write(filename, myrecording, fs)
+    # with open(filename, "rb") as file:
+    #     openai.api_key = api_key
+    #     result = openai.Audio.transcribe("whisper-1", file)
+    # transcription = result['text']
+    # return transcription, playback
+    return "Hello", playback
 
 def start_talking(character_id=None):
     character_data = get_current_character_data(character_id)
