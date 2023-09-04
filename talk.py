@@ -112,6 +112,7 @@ def text_to_speech(text, voice_id, playback):
         # since the eleven labs response had an error,
         # we'll just play the text-to-speech using espeak
         subprocess.run(["espeak", text])
+        set_status('done_speaking')
 
 
 def print_colored(agent, text):
