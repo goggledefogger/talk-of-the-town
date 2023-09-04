@@ -27,6 +27,33 @@ def update_data(new_data):
     with open('database.json', 'w') as file:
         json.dump(saved_data, file, indent=2)
 
+def set_current_character(character_id):
+    # Load the existing data from database.json
+    with open('database.json', 'r') as file:
+        saved_data = json.load(file)
+
+    # Update the current character
+    saved_data['current_character'] = character_id
+
+    # Save the updated data back to database.json
+    with open('database.json', 'w') as file:
+        json.dump(saved_data, file, indent=2)
+
+def create_character(character_id, voice_id, prompt):
+    # Load the existing data from database.json
+    with open('database.json', 'r') as file:
+        data = json.load(file)
+
+    data['characters'][character_id] = {
+        "voice_id": voice_id,
+        "prompt": prompt
+    }
+
+    # Save the updated data back to database.json
+    with open('database.json', 'w') as file:
+        json.dump(data, file, indent=2)
+
+
 def update_character_data(character_id, new_data):
     # logging.info(f"New configuration: {json.dumps(new_data)}")
 
@@ -43,11 +70,13 @@ def update_character_data(character_id, new_data):
     with open('database.json', 'w') as file:
         json.dump(saved_data, file, indent=2)
 
-def get_current_character_data():
+def get_current_character_data(character_id=None):
     with open('database.json', 'r') as file:
         data = json.load(file)
-        current_character_id = data.get('current_character')
-        return data['characters'].get(current_character_id)
+        # if a character_id is not provided, use the current_character field
+        if not character_id:
+            character_id = data.get('current_character')
+        return data['characters'].get(character_id)
 
 def get_data():
     with open('database.json', 'r') as file:
@@ -69,7 +98,7 @@ def delete_character_data(character_id):
 
     # Save the updated data back to database.json
     with open('database.json', 'w') as file:
-        json.dump(data, file, indent=4)
+        json.dump(data, file, indent=2)
 
     return True
 
