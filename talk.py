@@ -177,6 +177,10 @@ def start_talking(character_id=None):
         user_message_without_generate_image = re.sub(r'(Response:|Narration:|Image: generate_image:.*|)', '', response).strip()
         text_to_speech(user_message_without_generate_image, character_data['voice_id'], playback)
 
+def strip_character_prefix(message):
+    """Remove character prefix from the message."""
+    return re.sub(r'^Character\w+:\s', '', message)
+
 
 def start_multi_character_talking(character1_id, character2_id):
     character1_data = get_current_character_data(character1_id)
@@ -197,7 +201,7 @@ def start_multi_character_talking(character1_id, character2_id):
             input_message = user_message2
 
         user_message1 = chatgpt(api_key, conversation, character1_data, f"CharacterA: {input_message}")
-        text_to_speech(user_message1, character1_data['voice_id'])
+        text_to_speech(strip_character_prefix(user_message1), character1_data['voice_id'])
         conversation.append({"role": "user", "content": f"CharacterA: {user_message1}"})
 
         # Check if conversation is still active before Character 2 speaks
@@ -206,7 +210,7 @@ def start_multi_character_talking(character1_id, character2_id):
 
         # Character 2 responds to the message from Character 1
         user_message2 = chatgpt(api_key, conversation, character2_data, f"CharacterB: {user_message1}")
-        text_to_speech(user_message2, character2_data['voice_id'])
+        text_to_speech(strip_character_prefix(user_message2), character2_data['voice_id'])
         conversation.append({"role": "assistant", "content": f"CharacterB: {user_message2}"})
 
 
