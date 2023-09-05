@@ -11,6 +11,7 @@ from pydub.playback import play
 from pydub.playback import _play_with_simpleaudio
 import time
 import subprocess
+import random
 
 from database import get_current_character_data, get_system_prompt, reset_system_prompt
 from audio_device import get_default_audio_input_device, get_device_metadata
@@ -74,13 +75,24 @@ def reset_conversation():
     logging.info('conversation reset')
 
 
-def chatgpt(api_key, conversation, character_data, user_input, multi_character=False, temperature=0.9, frequency_penalty=0.2, presence_penalty=0):
+def chatgpt(api_key, conversation, character_id, character_data, user_input, multi_character=False, initial_message="", temperature=0.9, frequency_penalty=0.2, presence_penalty=0):
     set_status('generating_response')
     openai.api_key = api_key
     conversation.append({"role": "user","content": user_input})
     messages_input = conversation.copy()
-    prompt = [{"role": "system", "content": get_system_prompt(multi_character) + character_data['prompt']}]
+    # if it's not multi_character, get the system prompt and append the character's prompt
+    if not multi_character:
+        prompt = [{"role": "system", "content": get_system_prompt() + character_data['prompt']}]
+    else:
+        # if it's multi_character, get the system prompt and append the initial message and the character's prompt
+        system_content = get_system_prompt(multi_character) + initial_message
+        system_content = system_content + '\n\n' + '. The character speaking now is: ' + character_data['prompt']
+        prompt = [{"role": "system", "content": system_content}]
+
+    # prompt = [{"role": "system", "content": get_system_prompt(multi_character) + character_data['prompt']}]
+
     messages_input.insert(0, prompt[0])
+    logging.info("prompt: " + str(prompt))
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0613",
         temperature=temperature,
@@ -90,6 +102,9 @@ def chatgpt(api_key, conversation, character_data, user_input, multi_character=F
     chat_response = completion['choices'][0]['message']['content']
     conversation.append({"role": "assistant", "content": chat_response})
     set_status('finished_generating_response')
+
+    print_colored(f"{character_id}:", f"{chat_response}\n\n")
+
     return chat_response
 
 
@@ -129,13 +144,20 @@ def play_audio_file(filepath):
     audio = AudioSegment.from_mp3('output.mp3')
     play(audio)
 
+character_colors = {}
 
-def print_colored(agent, text):
-    agent_colors = {
-        "ChatBot:": Fore.YELLOW,
-    }
-    color = agent_colors.get(agent, "")
-    print(color + f"{agent}: {text}" + Style.RESET_ALL, end="")
+def print_colored(character_id, text):
+    # if the character_id isn't yet in the character_colors dictionary,
+    # add it with a randomly generated color
+    if character_id not in character_colors:
+        # generate a random color
+        color = random.choice([Fore.RED, Fore.GREEN, Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN])
+        # add the character_id and color to the dictionary
+        character_colors[character_id] = color
+    else:
+        color = character_colors.get(character_id)
+
+    print(color + f"{character_id}: {text}" + Style.RESET_ALL, end="")
 
 def record_and_transcribe(playback, duration=8, fs=sample_rate):
     set_status("recording")
@@ -173,7 +195,7 @@ def start_talking(character_id=None):
     while is_conversation_active():
         playback = None
         user_message, playback = record_and_transcribe(playback)
-        response = chatgpt(api_key, conversation, character_data, user_message)
+        response = chatgpt(api_key, conversation, character_id, character_data, user_message)
         print_colored("ChatBot:", f"{response}\n\n")
         user_message_without_generate_image = re.sub(r'(Response:|Narration:|Image: generate_image:.*|)', '', response).strip()
         text_to_speech(user_message_without_generate_image, character_data['voice_id'], playback)
@@ -184,37 +206,32 @@ def strip_character_prefix(message):
 
 
 def start_multi_character_talking(character1_id, character2_id, initial_message="hello"):
-    logging.info('initial message: ' + initial_message)
-
     character1_data = get_current_character_data(character1_id)
     character2_data = get_current_character_data(character2_id)
 
     reset_conversation()
     reset_system_prompt()
 
-    first_iteration = True
+    character_a_response = ""
+    character_b_response = ""
 
     while is_conversation_active():
-        # If it's the first iteration, Character 1 responds to the initial message
-        # Otherwise, Character 1 responds to the last message from Character 2
-        if first_iteration:
-            input_message = initial_message
-            first_iteration = False
-        else:
-            input_message = user_message2
-
-        user_message1 = chatgpt(api_key, conversation, character1_data, f"CharacterA: {input_message}", multi_character=True)
-        text_to_speech(strip_character_prefix(user_message1), character1_data['voice_id'])
-        conversation.append({"role": "user", "content": f"CharacterA: {user_message1}"})
+        character_a_response = chatgpt(api_key, conversation, character1_id,
+                                character1_data, f"CharacterB: {character_b_response}",
+                                multi_character=True, initial_message=initial_message)
+        text_to_speech(strip_character_prefix(character_a_response), character1_data['voice_id'])
+        conversation.append({"role": "user", "content": f"CharacterA: {character_a_response}"})
 
         # Check if conversation is still active before Character 2 speaks
         if not is_conversation_active():
             break
 
         # Character 2 responds to the message from Character 1
-        user_message2 = chatgpt(api_key, conversation, character2_data, f"CharacterB: {user_message1}", multi_character=True)
-        text_to_speech(strip_character_prefix(user_message2), character2_data['voice_id'])
-        conversation.append({"role": "assistant", "content": f"CharacterB: {user_message2}"})
+        character_b_response = chatgpt(api_key, conversation, character2_id,
+                                character2_data, f"CharacterA: {character_a_response}",
+                                multi_character=True, initial_message=initial_message)
+        text_to_speech(strip_character_prefix(character_b_response), character2_data['voice_id'])
+        conversation.append({"role": "assistant", "content": f"CharacterB: {character_b_response}"})
 
 
 if __name__ == "__main__":
