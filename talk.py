@@ -60,6 +60,7 @@ if not api_key:
     raise Exception("Please set your OPENAI_API_KEY environment variable.")
 
 conversation1 = []
+last_character_id = None
 
 device_name = get_default_audio_input_device()
 device_metadata = get_device_metadata(device_name)
@@ -67,6 +68,10 @@ device_metadata = get_device_metadata(device_name)
 num_channels = device_metadata['channels']
 sample_rate = int(device_metadata['sample_rate'])
 
+def reset_conversation():
+    global conversation1
+    conversation1 = []
+    logging.info('conversation reset')
 
 def chatgpt(api_key, conversation, character_data, user_input, temperature=0.9, frequency_penalty=0.2, presence_penalty=0):
     set_status('generating_response')
@@ -151,16 +156,20 @@ def record_and_transcribe(playback, duration=8, fs=sample_rate):
     return transcription, playback
 
 def start_talking(character_id=None):
+    global last_character_id
+
+     # Check if the character has been switched
+    if last_character_id is not None and last_character_id != character_id:
+        reset_conversation()
+
+    # Update the last_character_id
+    last_character_id = character_id
+
     character_data = get_current_character_data(character_id)
     # logging.info('character data: ' + str(character_data))
 
     while is_conversation_active():
         playback = None
-        # q = Queue()
-        # p = Process(target=record_and_transcribe, args=(q, playback))
-        # p.start()
-        # p.join()
-        # user_message, playback = q.get()
         user_message, playback = record_and_transcribe(playback)
         response = chatgpt(api_key, conversation1, character_data, user_message)
         print_colored("ChatBot:", f"{response}\n\n")
