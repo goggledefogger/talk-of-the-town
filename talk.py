@@ -59,7 +59,7 @@ api_key = os.getenv('OPENAI_API_KEY')
 if not api_key:
     raise Exception("Please set your OPENAI_API_KEY environment variable.")
 
-conversation1 = []
+conversation = []
 last_character_id = None
 
 device_name = get_default_audio_input_device()
@@ -69,8 +69,8 @@ num_channels = device_metadata['channels']
 sample_rate = int(device_metadata['sample_rate'])
 
 def reset_conversation():
-    global conversation1
-    conversation1 = []
+    global conversation
+    conversation = []
     logging.info('conversation reset')
 
 def chatgpt(api_key, conversation, character_data, user_input, temperature=0.9, frequency_penalty=0.2, presence_penalty=0):
@@ -97,13 +97,14 @@ def play_waiting_music():
     return _play_with_simpleaudio(audio)
 
 
-def text_to_speech(text, voice_id, playback):
+def text_to_speech(text, voice_id, playback=None):
     set_status('synthesizing_voice')
     response = get_speech_audio(text, voice_id)
-    try:
-        playback.stop()
-    except:
-        logging.error('error stopping playback')
+    if playback is not None:
+        try:
+            playback.stop()
+        except:
+            logging.error('error stopping playback')
     set_status('speaking')
     if response.status_code == 200:
         play_audio_file('output.mp3')
@@ -171,36 +172,42 @@ def start_talking(character_id=None):
     while is_conversation_active():
         playback = None
         user_message, playback = record_and_transcribe(playback)
-        response = chatgpt(api_key, conversation1, character_data, user_message)
+        response = chatgpt(api_key, conversation, character_data, user_message)
         print_colored("ChatBot:", f"{response}\n\n")
         user_message_without_generate_image = re.sub(r'(Response:|Narration:|Image: generate_image:.*|)', '', response).strip()
         text_to_speech(user_message_without_generate_image, character_data['voice_id'], playback)
 
 
-
 def start_multi_character_talking(character1_id, character2_id):
-    global last_character_id
-
-    # Reset conversation if the characters change
-    if last_character_id is not None and (last_character_id != character1_id or last_character_id != character2_id):
-        reset_conversation()
-
-    # Update the last_character_id (we can use a tuple to store both character IDs)
-    last_character_id = (character1_id, character2_id)
-
-    # Get character data for both characters
     character1_data = get_current_character_data(character1_id)
     character2_data = get_current_character_data(character2_id)
 
-    # Alternate between the two characters while the conversation is active
+    reset_conversation()
+
+    initial_message = "hello"
+    first_iteration = True
+
     while is_conversation_active():
-        # Character 1 speaks
-        playback = None
-        user_message1, playback = record_and_transcribe(playback)
-        response1 = chatgpt(api_key, conversation1, character1_data, user_message1)
-        print_colored("Character1:", f"{response1}\n\n")
-        user_message1_without_generate_image = re.sub(r'(Response:|Narration:|Image: generate_image:.*|)', '', response1).strip()
-        text_to_speech
+        # If it's the first iteration, Character 1 responds to the initial message
+        # Otherwise, Character 1 responds to the last message from Character 2
+        if first_iteration:
+            input_message = initial_message
+            first_iteration = False
+        else:
+            input_message = user_message2
+
+        user_message1 = chatgpt(api_key, conversation, character1_data, f"CharacterA: {input_message}")
+        text_to_speech(user_message1, character1_data['voice_id'])
+        conversation.append({"role": "user", "content": f"CharacterA: {user_message1}"})
+
+        # Check if conversation is still active before Character 2 speaks
+        if not is_conversation_active():
+            break
+
+        # Character 2 responds to the message from Character 1
+        user_message2 = chatgpt(api_key, conversation, character2_data, f"CharacterB: {user_message1}")
+        text_to_speech(user_message2, character2_data['voice_id'])
+        conversation.append({"role": "assistant", "content": f"CharacterB: {user_message2}"})
 
 
 if __name__ == "__main__":
