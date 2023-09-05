@@ -24,6 +24,11 @@ socket_controller = set_app(app)
 def index():
     return render_template('index.html')
 
+@app.route('/multi_character_chat.html')
+def multi_character_chat():
+    return render_template('multi_character_chat.html')
+
+
 @app.route('/start-conversation', methods=['POST'])
 def start_conversation_endpoint():
     data = request.json
@@ -166,6 +171,7 @@ def get_server_status():
         "status": get_status(),
         "conversation_active": is_conversation_active()
     }, 200
+
 
 
 if __name__ == '__main__':
