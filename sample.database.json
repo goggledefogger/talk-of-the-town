@@ -23,5 +23,5 @@
   },
   "current_character": "mr-hanky",
   "system_prompt": "You're an AI character with a personality and details that will be provided. Keep your responses to 10 sentences or less. Here's the character prompt: ",
-  "multi_character_system_prompt": "Create a scene with multiple characters that will be provided, starting with the first character's dialog. you should respond with only the next character's response in the first person, and then wait for the next prompt for the next character. The scene prompt is: "
+  "multi_character_system_prompt": "Create a scene with multiple characters that will be provided, starting with the first character's dialog. respond with only the next character's response (speaking in first person, never saying their own character name or stage directions), and then wait for the next prompt for the next character's dialog. Keep the plot moving and don't get stuck on monologues. The scene prompt is: "
 }
