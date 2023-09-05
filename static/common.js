@@ -130,3 +130,49 @@ function hideLoader() {
   document.getElementById('loader').style.display = 'none';
   document.getElementById('dimmedBackground').style.display = 'none';
 }
+
+function updateConversationButtonState(isStarted) {
+  const stopButton = document.getElementById('stopConversationButton');
+  if (stopButton) {
+    stopButton.disabled = !isStarted;
+  }
+}
+
+function stopConversation() {
+  fetch('/stop-conversation', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.conversation_state === 'stopped') {
+        console.log('Conversation stopped.');
+        updateConversationButtonState(false);
+      } else {
+        console.error('Error stopping the conversation.');
+      }
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+    });
+}
+
+function baseUpdateUI(viewState) {
+  const startButton = document.querySelector('.start-conversation-button');
+  const stopButton = document.getElementById('stopConversationButton');
+
+  if (viewState.conversation_state === 'started') {
+    if (startButton) startButton.disabled = true;
+    if (stopButton) stopButton.disabled = false;
+  } else if (viewState.conversation_state === 'stopped') {
+    if (startButton) startButton.disabled = false;
+    if (stopButton) stopButton.disabled = true;
+  }
+}
+
+function updateUI(viewState) {
+  baseUpdateUI(viewState);
+  // This can be overridden in specific page JS files
+}

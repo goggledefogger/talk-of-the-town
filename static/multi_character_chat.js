@@ -1,30 +1,41 @@
-function updateUI(viewState) {
-  // Check the conversation state and update the UI accordingly
-  if (viewState.conversation_state === 'started') {
-    console.log('conversation state:', viewState.conversation_state);
-    // Update UI elements specific to multi_character_chat.html
-    // For example:
-    // document.getElementById('startChatBtn').disabled = true;
-    // document.getElementById('stopChatBtn').disabled = false;
-  } else if (viewState.conversation_state === 'stopped') {
-    console.log('conversation state:', viewState.conversation_state);
-    // Update UI elements specific to multi_character_chat.html
-    // For example:
-    // document.getElementById('startChatBtn').disabled = false;
-    // document.getElementById('stopChatBtn').disabled = true;
-  }
-
-  // Handle other UI updates based on viewState
+function multiCharacterUpdateUI(viewState) {
+  // Add any unique behavior for this page
+  console.log('Additional behavior for multi_character_chat.html');
   // ...
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+  const originalUpdateUI = updateUI;
+
+  updateUI = function (viewState) {
+    originalUpdateUI(viewState); // Call the base function
+    multiCharacterUpdateUI(viewState); // Call the specific function for this page
+  };
+
   fetchDatabaseData()
-    .then((characters) => {
-      populateCharacterDropdown('#someOtherDropdownId', characters);
-      // ... other code ...
+    .then((data) => {
+      populateCharacterDropdown('#character1', data.characters);
+      populateCharacterDropdown('#character2', data.characters);
     })
     .catch((error) => {
       console.error('Error in multi_character_chat.js:', error);
     });
 });
+
+function startConversation() {
+  const character1Id = document.getElementById('character1').value;
+  const character2Id = document.getElementById('character2').value;
+
+  fetch('/start-multi-character-conversation', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      character1_id: character1Id,
+      character2_id: character2Id,
+    }),
+  })
+    .then((response) => response.json())
+    .then(updateUI);
+}

@@ -36,8 +36,8 @@
         <!-- Options will be populated from the server -->
       </select>
     </div>
-    <button onclick="startConversation()">Start Conversation</button>
-    <div id="chatLog"></div>
+    <button id="startMultiCharacterConversationButton" class="start-conversation-button" onclick="startConversation()">Start Conversation</button>
+    <button id="stopConversationButton" onclick="stopConversation()" disabled>Stop Conversation</button>
   </div>
 
   <!-- Add necessary JS to handle the character selection and initiate conversation -->
