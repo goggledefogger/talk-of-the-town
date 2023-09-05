@@ -36,8 +36,13 @@
         <!-- Options will be populated from the server -->
       </select>
     </div>
-    <button id="startMultiCharacterConversationButton" class="start-conversation-button" onclick="startConversation()">Start Conversation</button>
+
+    <textarea id="initialMessage" rows="4" cols="50" placeholder="Enter initial message..."></textarea>
+
+    <button id="startMultiCharacterConversationButton" class="start-conversation-button"
+      onclick="startConversation()">Start Conversation</button>
     <button id="stopConversationButton" onclick="stopConversation()" disabled>Stop Conversation</button>
+
   </div>
 
   <!-- Add necessary JS to handle the character selection and initiate conversation -->
