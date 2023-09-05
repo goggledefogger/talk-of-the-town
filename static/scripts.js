@@ -9,7 +9,6 @@ fetchDatabaseData()
     console.error('Error in scripts.js:', error);
   });
 
-
 function handleSubmit(event, message) {
   event.preventDefault(); // Prevent the default form submission behavior
   showLoader();
@@ -154,17 +153,6 @@ function startConversation() {
     .then(updateUI);
 }
 
-function stopConversation() {
-  fetch('/stop-conversation', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-    .then((response) => response.json())
-    .then(updateUI);
-}
-
 function regenerateCharacterImage() {
   const characterId = document.getElementById('character_id').value;
   const characterPrompt = characterId.replace(/-/g, ' '); // Convert character_id back to a prompt
@@ -198,20 +186,10 @@ const animationClasses = [
   'getting-ready',
   'speaking',
   'done-speaking',
-  'error'
+  'error',
 ];
 
-function updateUI(viewState) {
-  if (viewState.conversation_state === 'started') {
-    console.log('conversation state:', viewState.conversation_state);
-    document.getElementById('startConversationBtn').disabled = true;
-    document.getElementById('stopConversationBtn').disabled = false;
-  } else if (viewState.conversation_state === 'stopped') {
-    console.log('conversation state:', viewState.conversation_state);
-    document.getElementById('startConversationBtn').disabled = false;
-    document.getElementById('stopConversationBtn').disabled = true;
-  }
-
+function indexUpdateUI(viewState) {
   if (viewState.status) {
     console.log('status:', viewState.status);
     document.getElementById('serverStatus').innerText = viewState.status;
@@ -258,3 +236,13 @@ function updateUI(viewState) {
     characterImage.classList.add(currentClass);
   }
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+  const originalUpdateUI = updateUI;
+
+  updateUI = function (viewState) {
+    originalUpdateUI(viewState); // Call the base function
+    indexUpdateUI(viewState); // Call the specific function for this page
+  };
+
+});

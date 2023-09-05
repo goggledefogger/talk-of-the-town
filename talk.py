@@ -175,8 +175,33 @@ def start_talking(character_id=None):
         print_colored("ChatBot:", f"{response}\n\n")
         user_message_without_generate_image = re.sub(r'(Response:|Narration:|Image: generate_image:.*|)', '', response).strip()
         text_to_speech(user_message_without_generate_image, character_data['voice_id'], playback)
-        if not is_conversation_active():
-            break
+
+
+
+def start_multi_character_talking(character1_id, character2_id):
+    global last_character_id
+
+    # Reset conversation if the characters change
+    if last_character_id is not None and (last_character_id != character1_id or last_character_id != character2_id):
+        reset_conversation()
+
+    # Update the last_character_id (we can use a tuple to store both character IDs)
+    last_character_id = (character1_id, character2_id)
+
+    # Get character data for both characters
+    character1_data = get_current_character_data(character1_id)
+    character2_data = get_current_character_data(character2_id)
+
+    # Alternate between the two characters while the conversation is active
+    while is_conversation_active():
+        # Character 1 speaks
+        playback = None
+        user_message1, playback = record_and_transcribe(playback)
+        response1 = chatgpt(api_key, conversation1, character1_data, user_message1)
+        print_colored("Character1:", f"{response1}\n\n")
+        user_message1_without_generate_image = re.sub(r'(Response:|Narration:|Image: generate_image:.*|)', '', response1).strip()
+        text_to_speech
+
 
 if __name__ == "__main__":
     start_talking()

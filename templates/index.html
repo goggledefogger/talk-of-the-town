@@ -18,12 +18,10 @@
 <body>
   <!-- Conversation Control Section -->
   <div class="conversation-control">
-    <button id="startConversationBtn" onclick="startConversation()">
+    <button id="startConversationButton" class="start-conversation-button" onclick="startConversation()">
       Start Conversation
     </button>
-    <button id="stopConversationBtn" onclick="stopConversation()" disabled>
-      Stop Conversation
-    </button>
+    <button id="stopConversationButton" onclick="stopConversation()" disabled>Stop Conversation</button>
     <div class="server-status-container">
       <div>Server:</div>
       <div id="serverStatus"></div>
@@ -38,7 +36,7 @@
 
     <div class="character-image-and-buttons-container">
       <div class="character-image-container">
-        <img id="characterImage" alt="Character Image" class="character-image not-started"/>
+        <img id="characterImage" alt="Character Image" class="character-image not-started" />
         <div class="status-display">
           <svg width="200" height="100" viewBox="0 0 200 100" style="background-color: #ffffff4d;">
             <circle id="leftEye" cx="60" cy="30" r="0" fill="#333" />
@@ -67,7 +65,8 @@
       <!-- Character Selection and Update Section -->
       <div class="character-selection">
         <label for="character_id">Select Character:</label>
-        <select id="character_id" name="character_id" onchange="loadCharacterData('#character_id', characterDataGlobal, true)">
+        <select id="character_id" name="character_id"
+          onchange="loadCharacterData('#character_id', characterDataGlobal, true)">
           <!-- Options will be populated dynamically from the database -->
         </select>
       </div>

@@ -7,7 +7,7 @@ import eventlet
 eventlet.monkey_patch()
 
 from database import update_character_data, get_data, update_data, delete_character_data, set_current_character, create_character
-from talk import start_talking, is_conversation_active, set_conversation_state, get_status
+from talk import start_talking, is_conversation_active, set_conversation_state, get_status, start_multi_character_talking
 from generate_image import generate_image
 from eleven_labs import get_random_voice_id
 from socket_controller import socketio, set_app
@@ -172,6 +172,21 @@ def get_server_status():
         "conversation_active": is_conversation_active()
     }, 200
 
+@app.route('/start-multi-character-conversation', methods=['POST'])
+def start_multi_character_conversation_endpoint():
+    data = request.json
+    character1_id = data.get('character1_id')
+    character2_id = data.get('character2_id')
+
+    if not character1_id or not character2_id:
+        return jsonify({'error': 'Both character IDs are required'}), 400
+
+    if not is_conversation_active():
+        set_conversation_state('started')
+        # Start a new thread for the conversation to allow other requests to be processed
+        eventlet.spawn(start_multi_character_talking, character1_id, character2_id)
+        return jsonify({'conversation_state': 'started'})
+    return jsonify({'conversation_state': 'error'})
 
 
 if __name__ == '__main__':
