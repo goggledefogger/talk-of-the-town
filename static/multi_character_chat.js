@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
 function startConversation() {
   const character1Id = document.getElementById('character1').value;
   const character2Id = document.getElementById('character2').value;
+  const initialMessage = document.getElementById('initialMessage').value;
 
   fetch('/start-multi-character-conversation', {
     method: 'POST',
@@ -34,6 +35,7 @@ function startConversation() {
     body: JSON.stringify({
       character1_id: character1Id,
       character2_id: character2Id,
+      initial_message: initialMessage
     }),
   })
     .then((response) => response.json())

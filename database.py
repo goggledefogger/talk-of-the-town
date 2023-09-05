@@ -121,12 +121,19 @@ def save_image(character_id, image_content):
     return image_path
 
 
-def get_system_prompt():
+def get_system_prompt(multi_character=False):
     global system_prompt
     if not system_prompt:
         with open('database.json', 'r') as file:
             data = json.load(file)
-            system_prompt = data['system_prompt']
+            if multi_character:
+                system_prompt = data['multi_character_system_prompt']
+            else:
+                system_prompt = data['system_prompt']
             return system_prompt
     else:
         return system_prompt
+
+def reset_system_prompt():
+    global system_prompt
+    system_prompt = ""

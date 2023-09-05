@@ -177,6 +177,7 @@ def start_multi_character_conversation_endpoint():
     data = request.json
     character1_id = data.get('character1_id')
     character2_id = data.get('character2_id')
+    initial_message = data.get('initial_message', 'hello') # Default to hello
 
     if not character1_id or not character2_id:
         return jsonify({'error': 'Both character IDs are required'}), 400
@@ -184,7 +185,7 @@ def start_multi_character_conversation_endpoint():
     if not is_conversation_active():
         set_conversation_state('started')
         # Start a new thread for the conversation to allow other requests to be processed
-        eventlet.spawn(start_multi_character_talking, character1_id, character2_id)
+        eventlet.spawn(start_multi_character_talking, character1_id, character2_id, initial_message)
         return jsonify({'conversation_state': 'started'})
     return jsonify({'conversation_state': 'error'})
 

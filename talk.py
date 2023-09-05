@@ -12,7 +12,7 @@ from pydub.playback import _play_with_simpleaudio
 import time
 import subprocess
 
-from database import get_current_character_data, get_system_prompt
+from database import get_current_character_data, get_system_prompt, reset_system_prompt
 from audio_device import get_default_audio_input_device, get_device_metadata
 from eleven_labs import get_speech_audio
 from socket_controller import socketio, emit_status, emit_conversation_state
@@ -73,12 +73,13 @@ def reset_conversation():
     conversation = []
     logging.info('conversation reset')
 
-def chatgpt(api_key, conversation, character_data, user_input, temperature=0.9, frequency_penalty=0.2, presence_penalty=0):
+
+def chatgpt(api_key, conversation, character_data, user_input, multi_character=False, temperature=0.9, frequency_penalty=0.2, presence_penalty=0):
     set_status('generating_response')
     openai.api_key = api_key
     conversation.append({"role": "user","content": user_input})
     messages_input = conversation.copy()
-    prompt = [{"role": "system", "content": get_system_prompt() + character_data['prompt']}]
+    prompt = [{"role": "system", "content": get_system_prompt(multi_character) + character_data['prompt']}]
     messages_input.insert(0, prompt[0])
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0613",
@@ -182,13 +183,15 @@ def strip_character_prefix(message):
     return re.sub(r'^Character\w+:\s', '', message)
 
 
-def start_multi_character_talking(character1_id, character2_id):
+def start_multi_character_talking(character1_id, character2_id, initial_message="hello"):
+    logging.info('initial message: ' + initial_message)
+
     character1_data = get_current_character_data(character1_id)
     character2_data = get_current_character_data(character2_id)
 
     reset_conversation()
+    reset_system_prompt()
 
-    initial_message = "hello"
     first_iteration = True
 
     while is_conversation_active():
@@ -200,7 +203,7 @@ def start_multi_character_talking(character1_id, character2_id):
         else:
             input_message = user_message2
 
-        user_message1 = chatgpt(api_key, conversation, character1_data, f"CharacterA: {input_message}")
+        user_message1 = chatgpt(api_key, conversation, character1_data, f"CharacterA: {input_message}", multi_character=True)
         text_to_speech(strip_character_prefix(user_message1), character1_data['voice_id'])
         conversation.append({"role": "user", "content": f"CharacterA: {user_message1}"})
 
@@ -209,7 +212,7 @@ def start_multi_character_talking(character1_id, character2_id):
             break
 
         # Character 2 responds to the message from Character 1
-        user_message2 = chatgpt(api_key, conversation, character2_data, f"CharacterB: {user_message1}")
+        user_message2 = chatgpt(api_key, conversation, character2_data, f"CharacterB: {user_message1}", multi_character=True)
         text_to_speech(strip_character_prefix(user_message2), character2_data['voice_id'])
         conversation.append({"role": "assistant", "content": f"CharacterB: {user_message2}"})
 
