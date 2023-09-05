@@ -1,100 +1,14 @@
-// Connect to the Flask-SocketIO server
-const host = window.location.hostname;
-const socket = io.connect('http://' + host + ':5002');
-let serverStatus = null;
-
-// Listen for the 'status_update' event
-socket.on('status_update', function (data) {
-  console.log('Received status update:', data.status);
-  updateUI(data);
-});
-
-// Listen for the 'conversation_status_update' event
-socket.on('conversation_update', function (data) {
-  console.log('Received conversation update:', data.conversation_state);
-  updateUI(data);
-});
-
-socket.on('connect_error', function (error) {
-  console.error('Connection Error:', error);
-  updateUI({ status: 'server_error' });
-});
-
-socket.on('connect_timeout', function () {
-  console.error('Connection Timeout');
-  updateUI({ status: 'server_timeout' });
-});
-
-socket.on('reconnect_error', function (error) {
-  console.error('Reconnection Error:', error);
-  updateUI({ status: 'server_error' });
-});
-
-socket.on('reconnect_failed', function () {
-  console.error('Reconnection Failed');
-  updateUI({ status: 'server_error' });
-});
-
-
-let characterDataGlobal = {}; // This will store the fetched character data
-
-// Function to load character data from the Flask API
-function fetchCharacterData() {
-  showLoader();
-  fetch('/get-data')
-    .then((response) => response.json())
-    .then((data) => {
-      characterDataGlobal = data; // Store the fetched data in the global variable
-      populateCharacterDropdown();
-      setCurrentCharacter();
-      // populate the form with the current character data
-      loadCharacterData();
-      hideLoader();
-    });
-}
-
-function populateCharacterDropdown() {
-  const dropdown = document.getElementById('character_id');
-  dropdown.innerHTML = ''; // Clear existing options
-  for (let characterId in characterDataGlobal.characters) {
-    const option = document.createElement('option');
-    option.value = characterId;
-    option.textContent = characterId.replace(/-/g, ' '); // Convert "cat-cartman" to "cat cartman"
-    dropdown.appendChild(option);
-  }
-}
-
-function loadCharacterData(userAction = false) {
-  const characterId = document.getElementById('character_id').value;
-  const characterData = characterDataGlobal.characters[characterId];
-  if (characterData) {
-    document.getElementById('voice_id').value = characterData.voice_id;
-    document.getElementById('prompt').value = characterData.prompt;
-  } else {
-    console.warn(`Character data for '${characterId}' not found.`);
-  }
-
-  setCharacterImage(characterId);
-
-  // If this function was triggered by a user action, enable the button
-  if (userAction) {
-    document.getElementById('configSubmit').disabled = true;
-  }
-}
-
-function setCharacterImage(characterId) {
-  showLoader();
-  fetch(`/get_character_image/${characterId}`)
-    .then((response) => response.json())
-    .then((data) => {
-      const characterImageElement = document.getElementById('characterImage');
-      characterImageElement.src = data.image_path;
-      hideLoader();
-    });
-}
-
 // Call the function initially to fetch and populate the character data
-fetchCharacterData();
+fetchDatabaseData()
+  .then((data) => {
+    populateCharacterDropdown('#character_id', data.characters);
+    setCurrentCharacter('#character_id', data.current_character);
+    loadCharacterData('#character_id', data);
+  })
+  .catch((error) => {
+    console.error('Error in scripts.js:', error);
+  });
+
 
 function handleSubmit(event, message) {
   event.preventDefault(); // Prevent the default form submission behavior
@@ -149,24 +63,6 @@ function attachInputChangeListeners(formId) {
 attachInputChangeListeners('configForm');
 attachInputChangeListeners('characterForm');
 
-function setCurrentCharacter() {
-  // use the data structure to get it
-  const currentCharacter = characterDataGlobal['current_character'];
-  const dropdown = document.getElementById('character_id');
-  dropdown.value = currentCharacter;
-  loadCharacterData();
-}
-
-function sanitizeCharacterId(characterId) {
-  // Convert spaces to hyphens
-  let sanitized = characterId.replace(/\s+/g, '-');
-
-  // Remove non-alphanumeric and non-hyphen characters
-  sanitized = sanitized.replace(/[^a-zA-Z0-9-]/g, '');
-
-  return sanitized.toLowerCase(); // Convert to lowercase for consistency
-}
-
 document
   .getElementById('characterForm')
   .addEventListener('submit', function (event) {
@@ -180,7 +76,7 @@ document
 // Function to populate the current character dropdown
 function populateCurrentCharacterDropdown() {
   const dropdown = document.getElementById('current_character');
-  for (let characterId in characterDataGlobal) {
+  for (let characterId in characterDataGlobal.characters) {
     const option = document.createElement('option');
     option.value = characterId;
     option.textContent = characterId.replace(/-/g, ' ');
@@ -293,31 +189,6 @@ function regenerateCharacterImage() {
       }
     });
 }
-
-function showLoader() {
-  document.getElementById('loader').style.display = 'block';
-  document.getElementById('dimmedBackground').style.display = 'block';
-}
-
-function hideLoader() {
-  document.getElementById('loader').style.display = 'none';
-  document.getElementById('dimmedBackground').style.display = 'none';
-}
-
-// function checkServerStatus() {
-//   fetch('/status')
-//     .then((response) => response.json())
-//     .then((data) => {
-//       document.getElementById('serverStatus').innerText = data.status;
-//       const viewState = {
-//         status: data.status,
-//       };
-//       updateUI(viewState);
-//     })
-//     .catch((error) => {
-//       document.getElementById('serverStatus').innerText = 'SERVER ERROR';
-//     });
-// }
 
 const animationClasses = [
   'not-started',

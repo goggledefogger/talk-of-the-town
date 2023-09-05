@@ -11,6 +11,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" defer></script>
 
   <script src="{{ url_for('static', filename='animations.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='common.js') }}" defer></script>
   <script src="{{ url_for('static', filename='scripts.js') }}" defer></script>
 </head>
 
@@ -66,7 +67,7 @@
       <!-- Character Selection and Update Section -->
       <div class="character-selection">
         <label for="character_id">Select Character:</label>
-        <select id="character_id" name="character_id" onchange="loadCharacterData(true)">
+        <select id="character_id" name="character_id" onchange="loadCharacterData('#character_id', characterDataGlobal, true)">
           <!-- Options will be populated dynamically from the database -->
         </select>
       </div>
