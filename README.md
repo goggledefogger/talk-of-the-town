@@ -1,10 +1,10 @@
 # Talk of the Town
 
-Talk of the Town is an interactive voice-based chatbot that integrates with GPT-3 and a text-to-speech service to provide a unique conversational experience. This project is a fork of [talk-to-chatgpt](https://github.com/AllAboutAI-YT/talk-to-chatgpt) by AllAboutAI-YT.
+Talk of the Town is an interactive voice-based chatbot that integrates with GPT-3 and multiple text-to-speech services to provide a unique conversational experience. This project is a fork of [talk-to-chatgpt](https://github.com/AllAboutAI-YT/talk-to-chatgpt) by AllAboutAI-YT.
 
 ## Overview
 
-This project provides a web-based interface where users can interact with virtual characters. Each character has a unique voice and a generative art image associated with it. The interactions are powered by OpenAI's GPT-3 Turbo. The primary voice generation is done using Eleven Labs' API, with a fallback to `espeak` if Eleven Labs is unavailable. The generative art images for each character are created using OpenAI's DALL·E. Real-time communication between the frontend and backend is facilitated using Socket.io, ensuring a smooth and responsive user experience.
+This project provides a web-based interface where users can interact with virtual characters. Each character has a unique voice and a generative art image associated with it. The interactions are powered by OpenAI's GPT-3 Turbo. The primary voice generation is done using Eleven Labs' API, with fallbacks to Google Cloud Text-to-Speech and `espeak` if needed. The generative art images for each character are created using OpenAI's DALL·E. Real-time communication between the frontend and backend is facilitated using Socket.io, ensuring a smooth and responsive user experience.
 
 ## Installation
 
@@ -53,6 +53,7 @@ This project provides a web-based interface where users can interact with virtua
 7. Update the `config.env` file with the necessary API keys:
    - `OPENAI_API_KEY`: Obtain this key from [OpenAI](https://beta.openai.com/signup/). This key powers the GPT-3 Turbo and DALL·E art interactions.
    - `ELEVEN_LABS_KEY`: Get this key from [Eleven Labs](https://www.eleven-labs.com/). It's used for text-to-speech and voice functionalities.
+   - `GOOGLE_CLOUD_TTS_KEY_PATH`: Path to your Google Cloud Text-to-Speech JSON key file. Follow the instructions in the [Google Cloud Text-to-Speech documentation](https://cloud.google.com/text-to-speech/docs/quickstart-client-libraries) to obtain this key.
 
 Ensure you keep these keys confidential and do not expose them publicly.
 
