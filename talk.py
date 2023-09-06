@@ -95,25 +95,26 @@ def construct_multi_character_system_prompt(characters, initial_message):
 
     final_system_prompt = final_system_prompt + '\n\n' + '- Language Style: Casual language is permitted. '
     # if the setting for 'explicit' is set to true, add a string to the system prompt
-    if multi_character_settings['explicit']:
+    if multi_character_settings['explicit'] and multi_character_settings['explicit']=='true':
         final_system_prompt = final_system_prompt + 'Include swear words.'
     else:
         final_system_prompt = final_system_prompt + 'Exclude swear words.'
 
-
-
     # if the setting for 'stage_directions' is set to true, add a string to the system prompt
-    if multi_character_settings['stage_directions']:
+    if multi_character_settings['stage_directions'] and multi_character_settings['stage_directions']=='true':
         final_system_prompt = final_system_prompt + '\n\n -Stage Directions: Include minimal stage directions for added comedy, action, drama, or plot progression.'
 
-    final_system_prompt = final_system_prompt + '\n\n' + 'The initial characters are: '
-
+    final_system_prompt = final_system_prompt + '\n\nList of the universe of characters by character id, with the format:\n\n[CHARACTER_ID]:[CHARACTER_PROMPT]\n\n--- START OF FULL CHARACTER LIST ---'
     # loop through characters and add them to the system prompt
     for character_id in characters:
         logging.info('character id: ' + character_id)
         character_data = characters[character_id]
         logging.info('character data: ' + str(character_data))
         final_system_prompt = final_system_prompt + '\n\n[' + character_id + ']: ' + '[' + character_data['prompt'] + ']'
+
+    final_system_prompt = final_system_prompt + '\n\n--- END OF FULL CHARACTER LIST ---'
+
+    final_system_prompt = final_system_prompt + '\n\nREMEMBER: only one character\'s dialog must be in each GPT API response, none of the other characters should speak in the same response. So this response should only include one character\'s dialog.'
 
     logging.info('final multicharacter system prompt: ' + final_system_prompt)
     return final_system_prompt
@@ -154,7 +155,7 @@ def chatgpt_multi_character(api_key, conversation, multi_character_system_prompt
     prompt = [{"role": "system", "content": multi_character_system_prompt}]
 
     messages_input.insert(0, prompt[0])
-    logging.info("multicharacter prompt: " + str(prompt))
+    # logging.info("multicharacter prompt: " + str(prompt))
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0613",
         temperature=temperature,
@@ -276,7 +277,7 @@ def start_talking(character_id=None):
         playback = None
         user_message, playback = record_and_transcribe(playback)
         response = chatgpt(api_key, conversation, character_id, character_data, user_message)
-        print_colored("ChatBot:", f"{response}\n\n")
+        # print_colored("ChatBot:", f"{response}\n\n")
         user_message_without_generate_image = re.sub(r'(Response:|Narration:|Image: generate_image:.*|)', '', response).strip()
         text_to_speech(user_message_without_generate_image, character_data['voice_id'], playback)
 
