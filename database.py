@@ -127,13 +127,29 @@ def get_system_prompt(multi_character=False):
         with open('database.json', 'r') as file:
             data = json.load(file)
             if multi_character:
-                system_prompt = data['multi_character_system_prompt']
+                system_prompt = data['multi_character_settings']['system_prompt']
             else:
                 system_prompt = data['system_prompt']
             return system_prompt
     else:
         return system_prompt
 
+def get_multi_character_settings():
+    with open('database.json', 'r') as file:
+        data = json.load(file)
+        return data['multi_character_settings']
+
 def reset_system_prompt():
     global system_prompt
     system_prompt = ""
+
+def get_characters_by_id(character_ids_array):
+    # load from database.json the character json but only the ids in the array
+    # return the json
+    with open('database.json', 'r') as file:
+        data = json.load(file)
+        characters = {}
+        for character_id in character_ids_array:
+            characters[character_id] = data['characters'][character_id]
+            characters[character_id]['character_id'] = character_id
+        return characters

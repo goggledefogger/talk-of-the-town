@@ -6,7 +6,7 @@ import eventlet
 
 eventlet.monkey_patch()
 
-from database import update_character_data, get_data, update_data, delete_character_data, set_current_character, create_character
+from database import update_character_data, get_data, update_data, delete_character_data, set_current_character, create_character, get_characters_by_id
 from talk import start_talking, is_conversation_active, set_conversation_state, get_status, start_multi_character_talking
 from generate_image import generate_image
 from eleven_labs import get_random_voice_id
@@ -182,10 +182,13 @@ def start_multi_character_conversation_endpoint():
     if not character1_id or not character2_id:
         return jsonify({'error': 'Both character IDs are required'}), 400
 
+    # combine the character 1 and 2's data into a single dictionary with the key as 'characters'
+    characters = get_characters_by_id([character1_id, character2_id])
+
     if not is_conversation_active():
         set_conversation_state('started')
         # Start a new thread for the conversation to allow other requests to be processed
-        eventlet.spawn(start_multi_character_talking, character1_id, character2_id, initial_message)
+        eventlet.spawn(start_multi_character_talking, characters, initial_message)
         return jsonify({'conversation_state': 'started'})
     return jsonify({'conversation_state': 'error'})
 
