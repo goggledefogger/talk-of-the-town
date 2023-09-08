@@ -131,7 +131,7 @@ def chatgpt(api_key, conversation, character_id, character_data, user_input):
     prompt = [{"role": "system", "content": get_system_prompt() + character_data['prompt']}]
 
     messages_input.insert(0, prompt[0])
-    logging.info("prompt: " + str(prompt))
+    # logging.info("prompt: " + str(prompt))
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0613",
         temperature=temperature,
@@ -147,48 +147,20 @@ def chatgpt(api_key, conversation, character_id, character_data, user_input):
     return chat_response
 
 
-def chatgpt_multi_character_initial_prompt(api_key, multi_character_system_prompt, initial_user_message):
-    global conversation
-    set_status('sending_initial_message')
-    openai.api_key = api_key
-
-    conversation = [{"role": "system", "content": multi_character_system_prompt}]
-
+def chatgpt_multi_character_initial_prompt(initial_user_message):
     initial_prompt = get_multi_character_settings()['initial_prompt']
     initial_prompt = initial_prompt + initial_user_message
-    # conversation.append({"role": "user","content": initial_prompt})
-
-    messages_input = conversation.copy()
-    messages_input.append({"role": "user","content": initial_prompt})
-
-    logging.info('prompt: ' + str(messages_input))
-
-    completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-0613",
-        temperature=temperature,
-        frequency_penalty=frequency_penalty,
-        presence_penalty=presence_penalty,
-        messages=messages_input)
-    chat_response = completion['choices'][0]['message']['content']
-    logging.info('response: ' + chat_response)
-    # conversation.append({"role": "assistant", "content": chat_response})
-    # conversation.append({"role": "assistant", "content": 'CONFIRMED. I will choose one character to speak first, using this as the scenario prompt: ' + initial_user_message})
-    set_status('received_initial_response')
-    return chat_response
+    return initial_prompt
 
 
 def chatgpt_multi_character(api_key, conversation, multi_character_system_prompt, last_character_output):
     set_status('generating_multicharacter_response')
     openai.api_key = api_key
-    if (last_character_output):
-        conversation.append({"role": "user","content": last_character_output})
-    else:
-        logging.info('no last character output, skipping adding to conversation')
 
+    conversation.append({"role": "user", "content": last_character_output})
     messages_input = conversation.copy()
-    # prompt = [{"role": "system", "content": multi_character_system_prompt}]
+    messages_input.insert(0, {"role": "system", "content": multi_character_system_prompt})
 
-    # messages_input.insert(0, prompt[0])
     logging.info("messages_input1: " + str(messages_input))
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0613",
@@ -326,16 +298,14 @@ def start_multi_character_talking(characters, initial_message="hello"):
     reset_system_prompt()
 
     multi_character_system_prompt = construct_multi_character_system_prompt(characters, initial_message)
-    chatgpt_multi_character_initial_prompt(api_key, multi_character_system_prompt, initial_message)
-
-    last_character_response = ""
+    initial_prompt = chatgpt_multi_character_initial_prompt(initial_message)
+    last_character_response = initial_prompt
 
     while is_conversation_active():
         response, responding_character_id = chatgpt_multi_character(api_key, conversation, multi_character_system_prompt, last_character_response)
         voice_id_to_use = characters[responding_character_id]['voice_id']
         logging.info('using voice id for ' + responding_character_id + ': ' + voice_id_to_use)
         text_to_speech(strip_character_prefix(response), voice_id_to_use)
-        # conversation.append({"role": "user", "content": response})
         last_character_response = response
 
 if __name__ == "__main__":
