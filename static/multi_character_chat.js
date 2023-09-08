@@ -16,11 +16,31 @@ document.addEventListener('DOMContentLoaded', function () {
     .then((data) => {
       populateCharacterDropdown('#character1', data.characters);
       populateCharacterDropdown('#character2', data.characters);
+
+      selectRandomCharacters('#character1', '#character2');
     })
     .catch((error) => {
       console.error('Error in multi_character_chat.js:', error);
     });
 });
+
+function selectRandomCharacters(selector1, selector2) {
+  const dropdown1 = document.querySelector(selector1);
+  const dropdown2 = document.querySelector(selector2);
+  if (!dropdown1 || !dropdown2) {
+    console.error(`Element not found for selector: ${selector1} or ${selector2}`);
+    return;
+  }
+  const characterIds = Object.keys(characterDataGlobal.characters);
+  // select two random characters and make sure they aren't the same
+  let randomIndex1 = Math.floor(Math.random() * characterIds.length);
+  let randomIndex2 = Math.floor(Math.random() * characterIds.length);
+  while (randomIndex1 === randomIndex2) {
+    randomIndex2 = Math.floor(Math.random() * characterIds.length);
+  }
+  dropdown1.value = characterIds[randomIndex1];
+  dropdown2.value = characterIds[randomIndex2];
+}
 
 function startConversation() {
   const character1Id = document.getElementById('character1').value;
