@@ -210,7 +210,7 @@ def text_to_speech(text, voice_id, playback=None):
         play_audio_file('output.mp3')
         set_status('done_speaking')
     else:
-        logging.error('Error:', response.text)
+        # logging.error('Error:', response.text)
         set_status('error_text_to_speech')
         logging.info('continuing on to use google cloud as a fallback')
         try:
