@@ -161,7 +161,7 @@ def chatgpt_multi_character(api_key, conversation, multi_character_system_prompt
     messages_input = conversation.copy()
     messages_input.insert(0, {"role": "system", "content": multi_character_system_prompt})
 
-    logging.info("messages_input1: " + str(messages_input))
+    # logging.info("complete prompt: " + str(messages_input))
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0613",
         temperature=temperature,
