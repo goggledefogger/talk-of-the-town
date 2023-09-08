@@ -148,17 +148,19 @@ def chatgpt(api_key, conversation, character_id, character_data, user_input):
 
 
 def chatgpt_multi_character_initial_prompt(api_key, multi_character_system_prompt, initial_user_message):
+    global conversation
     set_status('sending_initial_message')
     openai.api_key = api_key
 
+    conversation = [{"role": "system", "content": multi_character_system_prompt}]
+
     initial_prompt = get_multi_character_settings()['initial_prompt']
     initial_prompt = initial_prompt + initial_user_message
-    messages_input = [{"role": "user","content": initial_prompt}]
     # conversation.append({"role": "user","content": initial_prompt})
-    # messages_input = conversation.copy()
 
-    system_prompt = {"role": "system", "content": multi_character_system_prompt}
-    messages_input.insert(0, system_prompt)
+    messages_input = conversation.copy()
+    messages_input.append({"role": "user","content": initial_prompt})
+
     logging.info('prompt: ' + str(messages_input))
 
     completion = openai.ChatCompletion.create(
@@ -170,7 +172,7 @@ def chatgpt_multi_character_initial_prompt(api_key, multi_character_system_promp
     chat_response = completion['choices'][0]['message']['content']
     logging.info('response: ' + chat_response)
     # conversation.append({"role": "assistant", "content": chat_response})
-    conversation.append({"role": "assistant", "content": 'CONFIRMED. I will choose one character to speak first, using this as the scenario prompt: ' + initial_user_message})
+    # conversation.append({"role": "assistant", "content": 'CONFIRMED. I will choose one character to speak first, using this as the scenario prompt: ' + initial_user_message})
     set_status('received_initial_response')
     return chat_response
 
@@ -184,9 +186,9 @@ def chatgpt_multi_character(api_key, conversation, multi_character_system_prompt
         logging.info('no last character output, skipping adding to conversation')
 
     messages_input = conversation.copy()
-    prompt = [{"role": "system", "content": multi_character_system_prompt}]
+    # prompt = [{"role": "system", "content": multi_character_system_prompt}]
 
-    messages_input.insert(0, prompt[0])
+    # messages_input.insert(0, prompt[0])
     logging.info("messages_input1: " + str(messages_input))
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0613",
