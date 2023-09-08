@@ -24,9 +24,10 @@
   "current_character": "cat-cartman",
   "system_prompt": "You act believably as an AI character with a personality and details that will be provided. Don't narrate much about yourself or the situation, just express briefly what you think, and keep your responses to 10 sentences or less. Here's the character prompt: ",
   "multi_character_settings": {
-    "system_prompt": "In this virtual world, AI characters engage in conversations. For each response, GPT should generate dialogue for ONLY ONE character, including the very first initial response. The response must strictly start with the character's ID enclosed in square brackets, followed by the colon character (':'), followed by their dialogue. Ensure that each character's unique personality, voice, and traits are maintained consistently and do not mix or transfer between characters. The AI should determine which character speaks next based on the context of the conversation and the setting provided. Again, there should be no dialogue from any other character in the same response.",
+    "system_prompt": "In this virtual world, AI characters engage in conversations. GPT should generate dialogue for ONLY ONE character per response. The response must strictly start with the character's ID enclosed in square brackets, followed by the colon character (':'), followed by their dialogue. Ensure that each character's unique personality, voice, and traits are maintained consistently and do not mix or transfer between characters. Again, there should be no dialogue from any other character in the same response.",
     "explicit": "true",
     "response_sentence_limit": 5,
-    "stage_directions": "false"
+    "stage_directions": "false",
+    "initial_prompt": "What follows after the --- is the description of the situation that you should generate dialog for. This is the only admin message you will be prompted with, so please respond to this first message with only the word CONFIRMED to show that you understand. After that initial confirmation request/response, each subsequent response will be a different character's dialog. The AI should determine which character speaks next based on the context of the conversation, typically rotating between characters. Other than your very first response, all other responses must strictly start with the character's ID enclosed in square brackets, followed by the colon character (':'), followed by their dialogue.\n\n---\n\n"
   }
 }
