@@ -80,7 +80,7 @@ def reset_conversation():
 def construct_multi_character_system_prompt(characters, initial_message):
     multi_character_settings = get_multi_character_settings()
     final_system_prompt = multi_character_settings['system_prompt']
-    logging.info('original system prompt: ' + final_system_prompt)
+    # logging.info('original system prompt: ' + final_system_prompt)
 
     # add the user's initial message to the system prompt
     # final_system_prompt = final_system_prompt + '\n\n' + 'Setting:'
@@ -107,19 +107,19 @@ def construct_multi_character_system_prompt(characters, initial_message):
     if multi_character_settings['stage_directions'] and multi_character_settings['stage_directions']=='true':
         final_system_prompt = final_system_prompt + '\n\n -Stage Directions: Include minimal stage directions for added comedy, action, drama, or plot progression.'
 
-    final_system_prompt = final_system_prompt + '\n\nList of the universe of characters by character id, with the format:\n\n[CHARACTER_ID]:[CHARACTER_PROMPT]\n\n--- START OF FULL CHARACTER LIST ---'
+    final_system_prompt = final_system_prompt + '\n\nList of the universe of characters by character id, with the format:\n\n[CHARACTER_ID]:[CHARACTER_PROMPT]\n\n*** START OF FULL CHARACTER LIST ***'
     # loop through characters and add them to the system prompt
     for character_id in characters:
-        logging.info('character id: ' + character_id)
+        # logging.info('character id: ' + character_id)
         character_data = characters[character_id]
-        logging.info('character data: ' + str(character_data))
+        # logging.info('character data: ' + str(character_data))
         final_system_prompt = final_system_prompt + '\n\n[' + character_id + ']: ' + '[' + character_data['prompt'] + ']'
 
-    final_system_prompt = final_system_prompt + '\n\n--- END OF FULL CHARACTER LIST ---'
+    final_system_prompt = final_system_prompt + '\n\n*** END OF FULL CHARACTER LIST ***'
 
     final_system_prompt = final_system_prompt + '\n\nREMEMBER: this response should only include one character\'s dialog.'
 
-    logging.info('final multicharacter system prompt: ' + final_system_prompt)
+    # logging.info('final multicharacter system prompt: ' + final_system_prompt)
     return final_system_prompt
 
 def chatgpt(api_key, conversation, character_id, character_data, user_input):
@@ -151,7 +151,6 @@ def chatgpt_multi_character_initial_prompt(api_key, multi_character_system_promp
     set_status('sending_initial_message')
     openai.api_key = api_key
 
-
     initial_prompt = get_multi_character_settings()['initial_prompt']
     initial_prompt = initial_prompt + initial_user_message
     messages_input = [{"role": "user","content": initial_prompt}]
@@ -160,6 +159,7 @@ def chatgpt_multi_character_initial_prompt(api_key, multi_character_system_promp
 
     system_prompt = {"role": "system", "content": multi_character_system_prompt}
     messages_input.insert(0, system_prompt)
+    logging.info('prompt: ' + str(messages_input))
 
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0613",
@@ -170,6 +170,7 @@ def chatgpt_multi_character_initial_prompt(api_key, multi_character_system_promp
     chat_response = completion['choices'][0]['message']['content']
     logging.info('response: ' + chat_response)
     # conversation.append({"role": "assistant", "content": chat_response})
+    conversation.append({"role": "assistant", "content": 'CONFIRMED. I will choose one character to speak first, using this as the scenario prompt: ' + initial_user_message})
     set_status('received_initial_response')
     return chat_response
 
