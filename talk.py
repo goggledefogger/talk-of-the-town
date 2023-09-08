@@ -239,10 +239,10 @@ def text_to_speech(text, voice_id, playback=None):
         set_status('error_text_to_speech')
         logging.info('continuing on to use google cloud as a fallback')
         try:
-            google_text_to_speech(text)
+            google_text_to_speech(text, voice_id)
             play_audio_file('output.mp3')
-        except:
-            logging.error('error using google cloud')
+        except Exception as e:
+            logging.error('error using google cloud: ' + str(e))
             logging.info('continuing on to use espeak as a fallback')
             # since the eleven labs response had an error,
             # we'll just play the text-to-speech using espeak
@@ -323,8 +323,7 @@ def start_multi_character_talking(characters, initial_message="hello"):
     reset_system_prompt()
 
     multi_character_system_prompt = construct_multi_character_system_prompt(characters, initial_message)
-    initial_gpt_response = chatgpt_multi_character_initial_prompt(api_key, multi_character_system_prompt, initial_message)
-    logging.info('initial gpt response: ' + initial_gpt_response)
+    chatgpt_multi_character_initial_prompt(api_key, multi_character_system_prompt, initial_message)
 
     last_character_response = ""
 
