@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Multi Character Chat</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" defer></script>
+
+    <script src="{{ url_for('static', filename='animations.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='common.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='multi_character_chat.js') }}" defer></script>
+  </head>
+</head>
+
+<body>
+  <div class="container">
+    <div class="loader" id="loader"></div>
+    <div class="dimmed-background" id="dimmedBackground"></div>
+
+    <h2>Multi Character Interaction</h2>
+    <div>
+      <label for="character1">Character 1:</label>
+      <select id="character1">
+        <!-- Options will be populated from the server -->
+      </select>
+    </div>
+    <div>
+      <label for="character2">Character 2:</label>
+      <select id="character2">
+        <!-- Options will be populated from the server -->
+      </select>
+    </div>
+
+    <textarea id="initialMessage" rows="4" cols="50" placeholder="Enter initial message..."></textarea>
+
+    <button id="startMultiCharacterConversationButton" class="start-conversation-button"
+      onclick="startConversation()">Start Conversation</button>
+    <button id="stopConversationButton" onclick="stopConversation()" disabled>Stop Conversation</button>
+
+  </div>
+
+  <!-- Add necessary JS to handle the character selection and initiate conversation -->
+</body>
+
+</html>
