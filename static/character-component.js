@@ -2,7 +2,7 @@ class CharacterComponent extends HTMLElement {
   constructor() {
     super();
     this.shadow = this.attachShadow({ mode: 'open' });
-    this.characterAnimation = new CharacterAnimation('.character-image');
+    this.characterAnimation = new CharacterAnimation(this.shadow);
   }
 
   connectedCallback() {
@@ -17,6 +17,7 @@ class CharacterComponent extends HTMLElement {
         this.characters = data.characters;
         this.populateDropdown(this.characters);
         this.chooseRandomCharacter();
+        this.characterAnimation.init();
       })
       .catch((error) => {
         console.error('Error in character-component:', error);
@@ -36,11 +37,11 @@ class CharacterComponent extends HTMLElement {
                 </div>
                 <div class="character-animations">
                   <svg width="200" height="100" viewBox="0 0 200 100" style="background-color: #ffffff4d;">
-                    <circle id="leftEye" cx="60" cy="30" r="0" fill="#333" />
-                    <circle id="rightEye" cx="140" cy="30" r="0" fill="#333" />
-                    <rect id="upperTeeth" x="10" y="40" width="180" height="5" fill="#ddd" />
-                    <rect id="lowerTeeth" x="10" y="55" width="180" height="5" fill="#ddd" />
-                    <path id="mouth" d="M10 50 Q100 70 190 50" fill="none" stroke="black" stroke-width="5" />
+                    <circle class="leftEye" cx="60" cy="30" r="0" fill="#333" />
+                    <circle class="rightEye" cx="140" cy="30" r="0" fill="#333" />
+                    <rect class="upperTeeth" x="10" y="40" width="180" height="5" fill="#ddd" />
+                    <rect class="lowerTeeth" x="10" y="55" width="180" height="5" fill="#ddd" />
+                    <path class="mouth" d="M10 50 Q100 70 190 50" fill="none" stroke="black" stroke-width="5" />
                   </svg>
                 </div>
               </div>

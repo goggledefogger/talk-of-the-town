@@ -1,9 +1,13 @@
 class CharacterAnimation {
-  constructor(elementSelector) {
-    this.characterImage = document.querySelector(elementSelector);
-    this.mouth = document.getElementById('mouth');
-    this.leftEye = document.getElementById('leftEye');
-    this.rightEye = document.getElementById('rightEye');
+  constructor(parentElement) {
+    this.parentElement = parentElement;
+  }
+
+  init() {
+    this.characterImage = this.parentElement.querySelector('.character-image');
+    this.mouth = this.parentElement.querySelector('.mouth');
+    this.leftEye = this.parentElement.querySelector('.leftEye');
+    this.rightEye = this.parentElement.querySelector('.rightEye');
     this.direction = 1; // 1 for opening, -1 for closing
     this.currentY = 70; // starting position
     this.easing = 0.6; // Adjusted base easing value
