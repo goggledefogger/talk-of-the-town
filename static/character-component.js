@@ -145,6 +145,11 @@ class CharacterComponent extends HTMLElement {
     // pull out the character id from the callback
     const characterId = callback.target.value;
     this.setCurrentCharacter(characterId);
+    // emit an event to let the parent know that the character has changed
+    const event = new CustomEvent('character-change', {
+      detail: { characterId },
+    });
+    this.dispatchEvent(event);
   }
 
   getCurrentCharacter() {
