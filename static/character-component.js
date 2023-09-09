@@ -2,6 +2,7 @@ class CharacterComponent extends HTMLElement {
   constructor() {
     super();
     this.shadow = this.attachShadow({ mode: 'open' });
+    this.characterAnimation = new CharacterAnimation('.character-image');
   }
 
   connectedCallback() {
@@ -29,10 +30,27 @@ class CharacterComponent extends HTMLElement {
   render() {
     this.shadow.innerHTML = `
             <div class="character-container">
-                <img class="character-image" src="" alt="Character Image">
+              <div class="character-image-and-animation-container">
+                <div class="character-image-container">
+                  <img class="character-image" src="" alt="Character Image">
+                </div>
+                <div class="character-animations">
+                  <svg width="200" height="100" viewBox="0 0 200 100" style="background-color: #ffffff4d;">
+                    <circle id="leftEye" cx="60" cy="30" r="0" fill="#333" />
+                    <circle id="rightEye" cx="140" cy="30" r="0" fill="#333" />
+                    <rect id="upperTeeth" x="10" y="40" width="180" height="5" fill="#ddd" />
+                    <rect id="lowerTeeth" x="10" y="55" width="180" height="5" fill="#ddd" />
+                    <path id="mouth" d="M10 50 Q100 70 190 50" fill="none" stroke="black" stroke-width="5" />
+                  </svg>
+                </div>
+              </div>
+              <div class="character-dropdown-container">
                 <label>${this.label}:</label>
                 <select class="character-dropdown"></select>
+              </div>
             </div>
+
+            <script src="/static/animations.js"></script>
         `;
     // load the css styles and apply it to this component
     const linkElem = document.createElement('link');
@@ -99,6 +117,10 @@ class CharacterComponent extends HTMLElement {
       characterIds[randomIndex];
     const randomCharacterId = characterIds[randomIndex];
     this.setCurrentCharacter(randomCharacterId);
+  }
+
+  startSpeaking() {
+    this.characterAnimation.startSpeakingAnimation();
   }
 }
 
