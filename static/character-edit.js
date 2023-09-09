@@ -16,6 +16,23 @@ function setCurrentCharacter(characterId) {
 
 function handleSubmit(event, message) {
   event.preventDefault(); // Prevent the default form submission behavior
+  submitFormData(event, message);
+}
+
+function handleUpdateCharacterSubmit(event, message) {
+  event.preventDefault();
+  characterIdInputElem = document.createElement('input');
+  characterIdInputElem.type = 'hidden';
+  characterIdInputElem.name = 'character_id';
+  characterIdInputElem.value = event.target
+    .querySelector('character-component')
+    .getCurrentCharacter();
+  event.target.appendChild(characterIdInputElem);
+
+  submitFormData(event, message);
+}
+
+function submitFormData(event, message) {
   showLoader();
   fetch(event.target.action, {
     method: 'POST',
@@ -90,7 +107,7 @@ function populateCurrentCharacterDropdown() {
 
 // Function to save the selected character as the default
 function setDefaultCharacter() {
-  this.getCurrentCharacter();
+  const characterId = characterComponent.getCurrentCharacter();
   showLoader();
   // Make an HTTP POST request to save the selected character as default
   fetch('/save-current-character', {
@@ -98,7 +115,7 @@ function setDefaultCharacter() {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ current_character: selectedCharacter }),
+    body: JSON.stringify({ current_character: characterId }),
   })
     .then((response) => response.json())
     .then((data) => {
@@ -209,5 +226,4 @@ document.addEventListener('DOMContentLoaded', function () {
     originalUpdateUI(viewState); // Call the base function
     indexUpdateUI(viewState); // Call the specific function for this page
   };
-
 });
