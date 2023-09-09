@@ -1,0 +1,17 @@
+/* Styles specific to the character-component */
+select {
+  padding: 5px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+label {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+img {
+  width: 200px;
+  height: 200px;
+}

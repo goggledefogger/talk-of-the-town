@@ -51,28 +51,7 @@ function fetchDatabaseData() {
     });
 }
 
-function populateCharacterDropdown(selector, characters) {
-  const dropdown = document.querySelector(selector);
-  if (!dropdown) {
-    console.error(`Element not found for selector: ${selector}`);
-    return;
-  }
-  dropdown.innerHTML = ''; // Clear existing options
-  Object.keys(characters).forEach((characterId) => {
-    const option = document.createElement('option');
-    option.value = characterId;
-    option.textContent = characterId.replace(/-/g, ' '); // Convert "cat-cartman" to "cat cartman"
-    dropdown.appendChild(option);
-  });
-}
-
-function loadCharacterData(
-  dropdownSelector,
-  characterData,
-  userAction = false
-) {
-  const dropdown = document.querySelector(dropdownSelector);
-  const characterId = dropdown.value;
+function loadCharacterData(characterId, characterData, userAction = false) {
   const characterDetails = characterData.characters[characterId];
 
   if (characterDetails) {
@@ -82,7 +61,6 @@ function loadCharacterData(
     if (characterDetails.prompt) {
       document.getElementById('prompt').value = characterDetails.prompt;
     }
-    setCharacterImage(characterId);
   } else {
     console.warn(`Character data for '${characterId}' not found.`);
   }
@@ -93,22 +71,6 @@ function loadCharacterData(
   } else {
     document.getElementById('configSubmit').disabled = true;
   }
-}
-
-function setCharacterImage(characterId) {
-  showLoader();
-  fetch(`/get_character_image/${characterId}`)
-    .then((response) => response.json())
-    .then((data) => {
-      const characterImageElement = document.getElementById('characterImage');
-      characterImageElement.src = data.image_path;
-      hideLoader();
-    });
-}
-
-function setCurrentCharacter(dropdownSelector, currentCharacter) {
-  const dropdown = document.querySelector(dropdownSelector);
-  dropdown.value = currentCharacter;
 }
 
 function sanitizeCharacterId(characterId) {

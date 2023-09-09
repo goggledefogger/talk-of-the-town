@@ -11,17 +11,6 @@ document.addEventListener('DOMContentLoaded', function () {
     originalUpdateUI(viewState); // Call the base function
     multiCharacterUpdateUI(viewState); // Call the specific function for this page
   };
-
-  fetchDatabaseData()
-    .then((data) => {
-      populateCharacterDropdown('#character1', data.characters);
-      populateCharacterDropdown('#character2', data.characters);
-
-      selectRandomCharacters('#character1', '#character2');
-    })
-    .catch((error) => {
-      console.error('Error in multi_character_chat.js:', error);
-    });
 });
 
 function selectRandomCharacters(selector1, selector2) {
@@ -43,8 +32,11 @@ function selectRandomCharacters(selector1, selector2) {
 }
 
 function startConversation() {
-  const character1Id = document.getElementById('character1').value;
-  const character2Id = document.getElementById('character2').value;
+  // loop through all the character-component elements and get the selected character
+  const characterComponents = document.querySelectorAll('character-component');
+  const character1Id = characterComponents[0].shadow.getElementById('characterDropdown').value;
+  const character2Id = characterComponents[1].shadow.getElementById('characterDropdown').value;
+
   const initialMessage = document.getElementById('initialMessage').value;
 
   fetch('/start-multi-character-conversation', {

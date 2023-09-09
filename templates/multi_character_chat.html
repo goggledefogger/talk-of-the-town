@@ -14,7 +14,11 @@
 
     <script src="{{ url_for('static', filename='animations.js') }}" defer></script>
     <script src="{{ url_for('static', filename='common.js') }}" defer></script>
+
+    <script src="{{ url_for('static', filename='character-component.js') }}" defer></script>
     <script src="{{ url_for('static', filename='multi_character_chat.js') }}" defer></script>
+
+
   </head>
 </head>
 
@@ -23,21 +27,15 @@
     <div class="loader" id="loader"></div>
     <div class="dimmed-background" id="dimmedBackground"></div>
 
-    <h2>Multi Character Interaction</h2>
+    <h2>Talk of the Town</h2>
     <div>
-      <label for="character1">Character 1:</label>
-      <select id="character1">
-        <!-- Options will be populated from the server -->
-      </select>
+      <character-component id="character1Component" label="Character 1"></character-component>
     </div>
     <div>
-      <label for="character2">Character 2:</label>
-      <select id="character2">
-        <!-- Options will be populated from the server -->
-      </select>
+      <character-component id="character2Component" label="Character 2"></character-component>
     </div>
 
-    <textarea id="initialMessage" rows="4" cols="50" placeholder="Enter initial message..."></textarea>
+    <textarea id="initialMessage" rows="4" cols="50" placeholder="Set the scene..."></textarea>
 
     <button id="startMultiCharacterConversationButton" class="start-conversation-button"
       onclick="startConversation()">Start Conversation</button>
