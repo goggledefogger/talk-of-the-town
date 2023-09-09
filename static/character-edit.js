@@ -94,6 +94,16 @@ document
     // The form will continue with its default submission behavior
   });
 
+// add an event listener for when the character dropdown changes
+// so it can load the data of the newly selected character
+document
+  .querySelector('character-component')
+  .addEventListener('character-change', function (event) {
+    const characterId = event.detail.characterId;
+    loadCharacterData(characterId, characterDataGlobal, true);
+  });
+
+
 // Function to populate the current character dropdown
 function populateCurrentCharacterDropdown() {
   const dropdown = document.getElementById('current_character');
