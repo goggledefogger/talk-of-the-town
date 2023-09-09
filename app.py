@@ -81,22 +81,14 @@ def add_character():
 @app.route('/save-current-character', methods=['POST'])
 def save_current_character():
     data = request.json
-    current_character = data.get('current_character')
+    character_id_to_use = data.get('current_character')
+    logging.info('character to set as default: ' + str(character_id_to_use))
 
-    if current_character:
-        saved_data = get_data()
-        # logging.info(str(saved_data))
-
-        logging.info(f"Current character: {current_character}")
-        # Update the current_character field
-        saved_data['current_character'] = current_character
-
-        # use database.py to save the updated data
-        update_data(json.dumps(saved_data))
-
-        return jsonify({"success": True, "message": "Character saved successfully!"}), 200
+    if character_id_to_use:
+        set_current_character(character_id_to_use)
+        return jsonify({"success": True, "message": "Character successfully set as default!"}), 200
     else:
-        return jsonify({"success": False, "message": "Error saving character."}), 400
+        return jsonify({"success": False, "message": "Error setting character."}), 400
 
 
 
