@@ -34,8 +34,8 @@ function selectRandomCharacters(selector1, selector2) {
 function startConversation() {
   // loop through all the character-component elements and get the selected character
   const characterComponents = document.querySelectorAll('character-component');
-  const character1Id = characterComponents[0].shadow.getElementById('characterDropdown').value;
-  const character2Id = characterComponents[1].shadow.getElementById('characterDropdown').value;
+  const character1Id = characterComponents[0].getCurrentCharacter();
+  const character2Id = characterComponents[1].getCurrentCharacter();
 
   const initialMessage = document.getElementById('initialMessage').value;
 
