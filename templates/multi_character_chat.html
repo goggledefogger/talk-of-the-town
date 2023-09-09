@@ -9,12 +9,12 @@
     <title>Multi Character Chat</title>
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='multi-character-styles.css') }}" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" defer></script>
 
-    <script src="{{ url_for('static', filename='animations.js') }}" defer></script>
     <script src="{{ url_for('static', filename='common.js') }}" defer></script>
-
+    <script src="{{ url_for('static', filename='animations.js') }}" defer></script>
     <script src="{{ url_for('static', filename='character-component.js') }}" defer></script>
     <script src="{{ url_for('static', filename='multi_character_chat.js') }}" defer></script>
 
@@ -28,10 +28,8 @@
     <div class="dimmed-background" id="dimmedBackground"></div>
 
     <h2>Talk of the Town</h2>
-    <div>
+    <div class="multi-character-container container">
       <character-component id="character1Component" label="Character 1"></character-component>
-    </div>
-    <div>
       <character-component id="character2Component" label="Character 2"></character-component>
     </div>
 

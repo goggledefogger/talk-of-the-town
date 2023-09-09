@@ -1,0 +1,9 @@
+.multi-character-container {
+  display: flex;
+  /* have the child elements side by side */
+  flex-direction: row;
+  /* spread the child elements out */
+  justify-content: space-between;
+  /* align the child elements to the top */
+  align-items: flex-start;
+}

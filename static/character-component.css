@@ -15,3 +15,237 @@ img {
   width: 200px;
   height: 200px;
 }
+
+
+.character-selection {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* This will vertically center the items */
+  width: 100%;
+  margin-bottom: 20px;
+  gap: 10px;
+  /* adds space between the label, dropdown, and button */
+}
+
+.character-selection label {
+  flex-shrink: 0;
+  /* prevents the label from shrinking */
+}
+
+.character-selection #character_id {
+  flex-grow: 1;
+  /* allows the dropdown to grow and take up available space */
+  flex-basis: 0;
+  /* starts the dropdown at minimum width before growing */
+  min-width: 50%;
+  /* ensures the dropdown has a minimum width */
+  margin-right: 10px;
+  /* adds some space between the dropdown and the button */
+}
+
+
+.character-selection #setDefaultCharacterBtn {
+  padding: 5px 10px;
+  /* adjust the padding to fit the text */
+  white-space: nowrap;
+  /* prevents the button text from wrapping */
+}
+
+.character-selection select,
+.character-selection label,
+.character-selection button {
+  margin: 0;
+  /* Reset default margin */
+  padding: 8px;
+  /* Apply consistent padding */
+}
+
+.character-image-and-animation-container {
+  /* prepares this as the parent element for two child elements, one that will overlay centered on the other
+    and one that will be positioned absolutely in the center of the parent */
+  position: relative;
+  /* allows the child elements to be positioned relative to this element */
+  width: 200px;
+
+}
+
+.character-animations {
+  /* this one should be centered over the parent element */
+  position: absolute;
+  /* allows this element to be positioned relative to the parent element */
+  top: 0;
+  /* positions this element at the top of the parent element */
+  left: 0;
+  /* positions this element at the left of the parent element */
+  width: 100%;
+  /* ensures this element is the same width as the parent element */
+  height: 100%;
+  /* ensures this element is the same height as the parent element */
+  display: flex;
+  /* allows the child elements to be positioned relative to this element */
+  justify-content: center;
+  /* Horizontally center */
+  align-items: center;
+  /* Vertically center */
+}
+
+.character-image-container {
+  padding: 10px;
+}
+
+.character-image-container img {
+  max-width: 100%;
+  /* Ensure the image doesn't overflow the container */
+  max-height: 100%;
+}
+
+.character-image-and-buttons-container {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 10px;
+}
+
+
+.mouth-path {
+  fill: none;
+  stroke: black;
+  stroke-width: 5;
+}
+
+@keyframes mouthAnimation {
+  0% {
+    transform: translateY(0) translateX(0) scaleY(1);
+  }
+
+  25% {
+    transform: translateY(var(--move-y)) translateX(var(--move-x)) scaleY(var(--scale-y));
+  }
+
+  50% {
+    transform: translateY(2%) translateX(-1%) scaleY(0.85);
+  }
+
+  75% {
+    transform: translateY(var(--move-y)) translateX(var(--move-x)) scaleY(var(--scale-y));
+  }
+
+  100% {
+    transform: translateY(0) translateX(0) scaleY(1);
+  }
+}
+
+.animated-mouth {
+  animation: mouthAnimation var(--animation-duration) infinite;
+  animation-timing-function: cubic-bezier(0.32, 0, 0.67, 1);
+  animation-delay: calc(0.5s * var(--random-delay));
+}
+
+.animated-mouth[data-random-delay] {
+  --random-delay: 1;
+  --animation-duration: 0.5s;
+  --move-x: 0%;
+  --move-y: 0%;
+  --scale-y: 1;
+}
+
+.not-started {
+  opacity: 0.5;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.recording {
+  animation: pulse 1s infinite;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.transcribing {
+  animation: rotate 5s infinite linear;
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-5px);
+  }
+
+  50% {
+    transform: translateX(5px);
+  }
+
+  75% {
+    transform: translateX(-5px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.thinking {
+  animation: shake 0.5s infinite;
+}
+
+@keyframes breathe {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.getting-ready {
+  animation: breathe 1.5s infinite;
+  filter: sepia(0.5);
+}
+
+@keyframes bounce {
+  0% {
+    transform: scale(1.1);
+  }
+
+  50% {
+    transform: scale(0.9);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.done-speaking {
+  animation: bounce 0.5s;
+}
+
+.error {
+  filter: sepia(1);
+}
