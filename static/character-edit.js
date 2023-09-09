@@ -1,4 +1,4 @@
-let characterElem = null;
+let characterComponent = null;
 // Call the function initially to fetch and populate the character data
 fetchDatabaseData()
   .then((data) => {
@@ -10,7 +10,7 @@ fetchDatabaseData()
   });
 
 function setCurrentCharacter(characterId) {
-  const characterComponent = document.querySelector('character-component');
+  characterComponent = document.querySelector('character-component');
   characterComponent.setCurrentCharacter(characterId);
 }
 
@@ -90,7 +90,7 @@ function populateCurrentCharacterDropdown() {
 
 // Function to save the selected character as the default
 function setDefaultCharacter() {
-  const selectedCharacter = document.getElementById('character_id').value;
+  this.getCurrentCharacter();
   showLoader();
   // Make an HTTP POST request to save the selected character as default
   fetch('/save-current-character', {
@@ -146,7 +146,7 @@ function deleteCharacter(characterId) {
 }
 
 function startConversation() {
-  const characterId = document.querySelector('character-component').getCurrentCharacter();
+  const characterId = characterComponent.getCurrentCharacter();
   fetch('/start-conversation', {
     method: 'POST',
     headers: {
@@ -175,7 +175,7 @@ function regenerateCharacterImage() {
       hideLoader();
       if (data.status === 'success') {
         // call into character-component.js to set the image
-        characterElem.setCharacterImage(characterId, true);
+        characterComponent.setCharacterImage(characterId, true);
       } else {
         alert('Failed to regenerate the image.');
       }
