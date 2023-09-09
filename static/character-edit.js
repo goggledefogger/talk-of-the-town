@@ -1,13 +1,18 @@
+let characterElem = null;
 // Call the function initially to fetch and populate the character data
 fetchDatabaseData()
   .then((data) => {
-    populateCharacterDropdown('#character_id', data.characters);
-    setCurrentCharacter('#character_id', data.current_character);
-    loadCharacterData('#character_id', data);
+    setCurrentCharacter(data.current_character);
+    loadCharacterData(data.current_character, data);
   })
   .catch((error) => {
-    console.error('Error in scripts.js:', error);
+    console.error('Error:', error);
   });
+
+function setCurrentCharacter(characterId) {
+  const characterComponent = document.querySelector('character-component');
+  characterComponent.setCurrentCharacter(characterId);
+}
 
 function handleSubmit(event, message) {
   event.preventDefault(); // Prevent the default form submission behavior
@@ -141,7 +146,7 @@ function deleteCharacter(characterId) {
 }
 
 function startConversation() {
-  const characterId = document.getElementById('character_id').value;
+  const characterId = document.querySelector('character-component').getCurrentCharacter();
   fetch('/start-conversation', {
     method: 'POST',
     headers: {
@@ -169,9 +174,8 @@ function regenerateCharacterImage() {
     .then((data) => {
       hideLoader();
       if (data.status === 'success') {
-        // Refresh the image
-        const characterImageElement = document.getElementById('characterImage');
-        characterImageElement.src = `/character_images/${characterId}.png?${new Date().getTime()}`; // Cache busting
+        // call into character-component.js to set the image
+        characterElem.setCharacterImage(characterId, true);
       } else {
         alert('Failed to regenerate the image.');
       }
