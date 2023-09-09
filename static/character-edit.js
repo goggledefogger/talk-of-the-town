@@ -198,46 +198,7 @@ function indexUpdateUI(viewState) {
     console.log('status:', viewState.status);
     document.getElementById('serverStatus').innerText = viewState.status;
 
-    const characterImage = document.getElementById('characterImage');
-    let currentClass = 'not-started';
-    switch (viewState.status) {
-      // cases for each of these statuses:
-      // not yet started, recording, transcribing,
-      // thinking, getting ready to speak, speaking, done speaking
-      case 'recording':
-        currentClass = 'recording';
-        stopSpeakingAnimation();
-        break;
-      case 'transcribing':
-        currentClass = 'transcribing';
-        break;
-      case 'generating_response':
-        currentClass = 'thinking';
-        break;
-      case 'finished_generating_response':
-        currentClass = 'getting-ready';
-        break;
-      case 'synthesizing_voice':
-        currentClass = 'getting-ready';
-        break;
-      case 'speaking':
-        currentClass = 'animated-mouth';
-        startSpeakingAnimation();
-        break;
-      case 'done_speaking':
-        currentClass = 'done-speaking';
-        stopSpeakingAnimation();
-        break;
-      case 'error_text_to_speech':
-        currentClass = 'error';
-        break;
-      default:
-        currentClass = 'not-started';
-    }
-    characterImage.classList.remove(...animationClasses);
-
-    // Add the current class
-    characterImage.classList.add(currentClass);
+    characterComponent.render(viewState);
   }
 }
 
