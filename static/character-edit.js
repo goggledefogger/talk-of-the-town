@@ -186,7 +186,7 @@ function startConversation() {
 }
 
 function regenerateCharacterImage() {
-  const characterId = document.getElementById('character_id').value;
+  const characterId = document.getElementById('mainCharacterComponent').getCurrentCharacter();
   const characterPrompt = characterId.replace(/-/g, ' '); // Convert character_id back to a prompt
 
   showLoader();
