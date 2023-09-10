@@ -87,7 +87,7 @@ img {
   max-height: 100%;
 }
 
-.character-image-and-buttons-container {
+.character-buttons-container {
   display: flex;
   flex-direction: row;
   margin-bottom: 10px;

@@ -1,7 +1,19 @@
 function multiCharacterUpdateUI(viewState) {
-  // Add any unique behavior for this page
-  console.log('Additional behavior for multi_character_chat.html');
-  // ...
+  if (viewState.status) {
+    // if the viewState.status.character_id exists, pull out the character_id
+    // and use it to find the appropriate character-component element
+    // and start the appropriate animation
+    if (viewState.status.character_id) {
+      console.log('character: ', viewState.status.character_id);
+      const characterId = viewState.status.character_id;
+      const characterComponent = document.querySelector(
+        '[data-character-id="' + characterId + '"]'
+      );
+      if (characterComponent) {
+        characterComponent.render(viewState);
+      }
+    }
+  }
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -17,7 +29,9 @@ function selectRandomCharacters(selector1, selector2) {
   const dropdown1 = document.querySelector(selector1);
   const dropdown2 = document.querySelector(selector2);
   if (!dropdown1 || !dropdown2) {
-    console.error(`Element not found for selector: ${selector1} or ${selector2}`);
+    console.error(
+      `Element not found for selector: ${selector1} or ${selector2}`
+    );
     return;
   }
   const characterIds = Object.keys(characterDataGlobal.characters);
@@ -47,7 +61,7 @@ function startConversation() {
     body: JSON.stringify({
       character1_id: character1Id,
       character2_id: character2Id,
-      initial_message: initialMessage
+      initial_message: initialMessage,
     }),
   })
     .then((response) => response.json())

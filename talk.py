@@ -22,14 +22,17 @@ from google_text_to_speech import google_text_to_speech
 logging.basicConfig(level=logging.INFO)
 
 conversation_state = 'init'
+current_character_id = None
+last_character_id = None
 
 init()
 
 def set_status(new_status):
-    global status
+    global status, last_character_id
     status = new_status
-    logging.info('status: ' + status)
-    emit_status(new_status)
+    status_data = {'status_string': status, 'character_id': current_character_id}
+    logging.info('status data: ' + str(status_data))
+    emit_status(status_data)
 
 set_status('not_started')
 
@@ -64,7 +67,6 @@ if not api_key:
     raise Exception("Please set your OPENAI_API_KEY environment variable.")
 
 conversation = []
-last_character_id = None
 
 device_name = get_default_audio_input_device()
 device_metadata = get_device_metadata(device_name)
@@ -154,6 +156,8 @@ def chatgpt_multi_character_initial_prompt(initial_user_message):
 
 
 def chatgpt_multi_character(api_key, conversation, multi_character_system_prompt, last_character_output):
+    global current_character_id
+
     set_status('generating_multicharacter_response')
     openai.api_key = api_key
 
@@ -186,6 +190,9 @@ def chatgpt_multi_character(api_key, conversation, multi_character_system_prompt
         logging.error('error parsing character id from chat response: ' + chat_response)
         logging.error('using the last character id instead: ' + last_character_id)
         character_id = last_character_id
+
+    current_character_id = character_id
+    logging.info('current character id3: ' + current_character_id)
 
     print_colored(f"{character_id}:", f"{chat_response}\n\n")
 
@@ -264,7 +271,7 @@ def record_and_transcribe(playback, duration=8, fs=sample_rate):
     return transcription, playback
 
 def start_talking(character_id=None):
-    global last_character_id
+    global last_character_id, current_character_id
 
      # Check if the character has been switched
     if last_character_id is not None and last_character_id != character_id:
@@ -274,6 +281,8 @@ def start_talking(character_id=None):
     last_character_id = character_id
 
     character_data = get_current_character_data(character_id)
+    current_character_id = character_id
+    logging.info('current character id2: ' + current_character_id)
     # logging.info('character data: ' + str(character_data))
 
     while is_conversation_active():
@@ -294,6 +303,8 @@ def strip_character_prefix(message):
 
 
 def start_multi_character_talking(characters, initial_message="hello"):
+    global current_character_id
+
     reset_conversation()
     reset_system_prompt()
 
@@ -303,6 +314,8 @@ def start_multi_character_talking(characters, initial_message="hello"):
 
     while is_conversation_active():
         response, responding_character_id = chatgpt_multi_character(api_key, conversation, multi_character_system_prompt, last_character_response)
+        current_character_id = responding_character_id
+        logging.info('current character id: ' + current_character_id)
         voice_id_to_use = characters[responding_character_id]['voice_id']
         logging.info('using voice id for ' + responding_character_id + ': ' + voice_id_to_use)
         text_to_speech(strip_character_prefix(response), voice_id_to_use)
