@@ -24,9 +24,9 @@ socket_controller = set_app(app)
 def index():
     return render_template('index.html')
 
-@app.route('/multi_character_chat.html')
+@app.route('/talk_of_the_town.html')
 def multi_character_chat():
-    return render_template('multi_character_chat.html')
+    return render_template('talk_of_the_town.html')
 
 
 @app.route('/start-conversation', methods=['POST'])
