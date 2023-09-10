@@ -17,24 +17,16 @@
 </head>
 
 <body>
-  <!-- Conversation Control Section -->
-  <div class="conversation-control">
-    <button id="startConversationButton" class="start-conversation-button" onclick="startConversation()">
-      Start Conversation
-    </button>
-    <button id="stopConversationButton" onclick="stopConversation()" disabled>Stop Conversation</button>
-    <div class="server-status-container">
-      <div>Server:</div>
-      <div id="serverStatus"></div>
-    </div>
-  </div>
-
   <div class="container">
     <div class="loader" id="loader"></div>
     <div class="dimmed-background" id="dimmedBackground"></div>
 
-    <h1>Character Editor</h1>
-
+    <div class="conversation-control">
+      <button id="startConversationButton" class="start-conversation-button" onclick="startConversation()">
+        Start Conversation
+      </button>
+      <button id="stopConversationButton" onclick="stopConversation()" disabled>Stop Conversation</button>
+    </div>
 
     <form id="configForm" action="/update-character" method="post"
       onsubmit="handleUpdateCharacterSubmit(event, 'Configuration updated successfully!')">
@@ -69,6 +61,11 @@
           Delete
         </button>
       </div>
+    </div>
+
+    <div class="server-status-container">
+      <div>Server:</div>
+      <div id="serverStatus"></div>
     </div>
 
     <hr />

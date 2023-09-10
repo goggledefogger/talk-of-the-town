@@ -282,7 +282,6 @@ def start_talking(character_id=None):
 
     character_data = get_current_character_data(character_id)
     current_character_id = character_id
-    logging.info('current character id2: ' + current_character_id)
     # logging.info('character data: ' + str(character_data))
 
     while is_conversation_active():
