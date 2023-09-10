@@ -73,13 +73,13 @@
     <h2>Add New Character</h2>
     <form id="characterForm" action="/add-character" method="post"
       onsubmit="handleSubmit(event, 'New character added successfully!')">
-      <label for="new_character_id">Character ID (e.g., cat-cartman):</label>
+      <label for="new_character_id">Character Name:</label>
       <input type="text" id="new_character_id" name="new_character_id" />
 
-      <label for="new_voice_id">Voice ID:</label>
+      <label for="new_voice_id">Voice ID (or leave blank for random):</label>
       <input type="text" id="new_voice_id" name="new_voice_id" />
 
-      <label for="new_prompt">Prompt:</label>
+      <label for="new_prompt">Character Prompt:</label>
       <textarea id="new_prompt" name="new_prompt" rows="5"></textarea>
 
       <button type="submit" disabled>Add New Character</button>
