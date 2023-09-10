@@ -35,19 +35,6 @@
 
     <h1>Character Editor</h1>
 
-    <div class="character-image-and-buttons-container">
-      <div class="character-buttons">
-        <button type="button" id="setDefaultCharacterBtn" onclick="setDefaultCharacter()">
-          Set as Default
-        </button>
-        <button type="button" id="regenerateImageBtn" onclick="regenerateCharacterImage()">
-          Regenerate Image
-        </button>
-        <button type="button" id="deleteCharacterBtn" onclick="confirmDeleteCharacter()">
-          Delete
-        </button>
-      </div>
-    </div>
 
     <form id="configForm" action="/update-character" method="post"
       onsubmit="handleUpdateCharacterSubmit(event, 'Configuration updated successfully!')">
@@ -68,6 +55,21 @@
         Save Configuration
       </button>
     </form>
+
+
+    <div class="character-buttons-container">
+      <div class="character-buttons">
+        <button type="button" id="setDefaultCharacterBtn" onclick="setDefaultCharacter()">
+          Set as Default
+        </button>
+        <button type="button" id="regenerateImageBtn" onclick="regenerateCharacterImage()">
+          Regenerate Image
+        </button>
+        <button type="button" id="deleteCharacterBtn" onclick="confirmDeleteCharacter()">
+          Delete
+        </button>
+      </div>
+    </div>
 
     <hr />
 

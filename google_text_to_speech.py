@@ -51,7 +51,8 @@ def google_text_to_speech(text, character_id):
 
     # Select the type of audio file you want
     audio_config = texttospeech.AudioConfig(
-        audio_encoding=texttospeech.AudioEncoding.MP3
+        audio_encoding=texttospeech.AudioEncoding.MP3,
+        speaking_rate=1.1,
     )
 
     # Perform the text-to-speech request

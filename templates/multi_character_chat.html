@@ -17,8 +17,6 @@
     <script src="{{ url_for('static', filename='animations.js') }}" defer></script>
     <script src="{{ url_for('static', filename='character-component.js') }}" defer></script>
     <script src="{{ url_for('static', filename='multi_character_chat.js') }}" defer></script>
-
-
   </head>
 </head>
 
@@ -27,13 +25,15 @@
     <div class="loader" id="loader"></div>
     <div class="dimmed-background" id="dimmedBackground"></div>
 
-    <h2>Talk of the Town</h2>
-    <div class="multi-character-container container">
+    <h1>Talk of the Town</h1>
+    <div class="multi-character-container smaller-container">
       <character-component id="character1Component" label="Character 1"></character-component>
       <character-component id="character2Component" label="Character 2"></character-component>
     </div>
 
-    <textarea id="initialMessage" rows="4" cols="50" placeholder="Set the scene..."></textarea>
+    <div class="smaller-container">
+      <textarea id="initialMessage" rows="4" cols="50" placeholder="Set the scene..."></textarea>
+    </div>
 
     <button id="startMultiCharacterConversationButton" class="start-conversation-button"
       onclick="startConversation()">Start Conversation</button>

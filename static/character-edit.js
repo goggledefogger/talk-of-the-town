@@ -209,21 +209,10 @@ function regenerateCharacterImage() {
     });
 }
 
-const animationClasses = [
-  'not-started',
-  'recording',
-  'transcribing',
-  'thinking',
-  'getting-ready',
-  'speaking',
-  'done-speaking',
-  'error',
-];
-
 function indexUpdateUI(viewState) {
   if (viewState.status) {
     console.log('status:', viewState.status);
-    document.getElementById('serverStatus').innerText = viewState.status;
+    document.getElementById('serverStatus').innerText = viewState.status.status_string;
 
     characterComponent.render(viewState);
   }

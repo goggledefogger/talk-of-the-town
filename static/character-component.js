@@ -1,3 +1,13 @@
+const animationClasses = [
+  'not-started',
+  'recording',
+  'transcribing',
+  'thinking',
+  'getting-ready',
+  'speaking',
+  'done-speaking',
+  'error',
+];
 class CharacterComponent extends HTMLElement {
   constructor() {
     super();
@@ -65,10 +75,10 @@ class CharacterComponent extends HTMLElement {
     const characterImageElem = this.shadow.querySelector('.character-image');
     characterImageElem.src = this.characterImageUrl;
 
-    if (!viewState) return;
+    if (!viewState || !viewState.status) return;
 
     let currentClass = 'not-started';
-    switch (viewState.status) {
+    switch (viewState.status.status_string) {
       // cases for each of these statuses:
       // not yet started, recording, transcribing,
       // thinking, getting ready to speak, speaking, done speaking
@@ -139,6 +149,8 @@ class CharacterComponent extends HTMLElement {
     // use the given character id to set the appropriate image and dropdown value
     this.setCharacterImage(characterId);
     this.shadow.querySelector('.character-dropdown').value = characterId;
+    // set the id attribute on this component to the character id
+    this.setAttribute('data-character-id', characterId);
   }
 
   onCharacterChange(callback) {
