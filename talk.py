@@ -189,14 +189,14 @@ def chatgpt_multi_character(api_key, conversation, multi_character_system_prompt
         character_id = chat_response_json['character_id']
         logging.info('character id: ' + character_id)
         response_text = chat_response_json['response_text']
-        logging.info('response text: ' + response_text)
+        # logging.info('response text: ' + response_text)
     except:
         logging.error('error parsing chat response: ' + chat_response)
         logging.error('using the last character id instead: ' + current_character_id)
         character_id = current_character_id
 
     current_character_id = character_id
-    logging.info('current character id3: ' + current_character_id)
+    # logging.info('current character id3: ' + current_character_id)
 
     print_colored(f"{current_character_id}:", f"{chat_response}\n\n")
 
@@ -212,7 +212,7 @@ def play_waiting_music():
 
 
 def text_to_speech(text, voice_id, playback=None):
-    logging.info('text to say: ' + str(text))
+    # logging.info('text to say: ' + str(text))
     set_status('synthesizing_voice')
     response = get_speech_audio(text, voice_id)
     if playback is not None:
