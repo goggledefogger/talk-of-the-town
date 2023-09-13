@@ -121,7 +121,7 @@ def construct_multi_character_system_prompt(characters, initial_message):
 
     final_system_prompt = final_system_prompt + '\n\n*** END OF FULL CHARACTER LIST ***'
 
-    final_system_prompt = final_system_prompt + '\n\nIMPORTANT: Each response should ONLY include dialogue or actions from ONE character, and the format must be strictly adhered to.'
+    final_system_prompt = final_system_prompt + '\n\nIMPORTANT: Each response must be valid JSON always beginning with\n\n{\"character_id\":\n\nand should ONLY include dialogue or actions from ONE character'
 
     logging.info('final multicharacter system prompt: ' + final_system_prompt)
     return final_system_prompt
