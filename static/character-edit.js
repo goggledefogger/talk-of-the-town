@@ -139,7 +139,7 @@ function setDefaultCharacter() {
 }
 
 function confirmDeleteCharacter() {
-  const characterId = document.getElementById('character_id').value;
+  const characterId = characterComponent.getCurrentCharacter();
   const confirmation = window.confirm(
     `Are you sure you want to delete the character "${characterId.replace(
       /-/g,

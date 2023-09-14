@@ -3,7 +3,6 @@ import soundfile as sf
 import openai
 import os
 from dotenv import load_dotenv
-import re
 import logging
 from colorama import Fore, Style, init
 from pydub import AudioSegment
@@ -12,6 +11,7 @@ from pydub.playback import _play_with_simpleaudio
 import time
 import subprocess
 import random
+import json
 
 from database import get_current_character_data, get_system_prompt, reset_system_prompt, get_multi_character_settings
 from audio_device import get_default_audio_input_device, get_device_metadata
@@ -23,14 +23,14 @@ logging.basicConfig(level=logging.INFO)
 
 conversation_state = 'init'
 current_character_id = None
-last_character_id = None
 
 init()
 
 def set_status(new_status):
-    global status, last_character_id
+    global status, current_character_id
     status = new_status
-    status_data = {'status_string': status, 'character_id': current_character_id}
+    status_data = {'status_string': status,
+                   'character_id': current_character_id}
     logging.info('status data: ' + str(status_data))
     emit_status(status_data)
 
@@ -84,11 +84,7 @@ def construct_multi_character_system_prompt(characters, initial_message):
     final_system_prompt = multi_character_settings['system_prompt']
     # logging.info('original system prompt: ' + final_system_prompt)
 
-    # add the user's initial message to the system prompt
-    # final_system_prompt = final_system_prompt + '\n\n' + 'Setting:'
-    # final_system_prompt = final_system_prompt + '\n\n' + initial_message
-
-    # final_system_prompt = final_system_prompt + '\n\n' + 'Ensure that characters respond to the most recent statement or question directed at them.'
+    # final_system_prompt = final_system_prompt + '\n\n' + 'Ensure that character responds to the most recent statement or question directed at them.'
 
     final_system_prompt = final_system_prompt + '\n\n' + '[USER-SET INSTRUCTIONS]'
     # if there is a setting for response_sentence_limit int, load it
@@ -96,7 +92,7 @@ def construct_multi_character_system_prompt(characters, initial_message):
     if multi_character_settings['response_sentence_limit']:
         response_sentence_limit = multi_character_settings['response_sentence_limit']
     final_system_prompt = final_system_prompt + '\n\n- Maximum Response Sentence Limit: ' + str(response_sentence_limit)
-    final_system_prompt = final_system_prompt + '. Do not artificially extend the dialogue to meet this limit.'
+    final_system_prompt = final_system_prompt + '. The responses should be shorter than that, and not take more than ten seconds if it was said.'
 
     final_system_prompt = final_system_prompt + '\n\n' + '- Language Style: Casual language is permitted. '
     # if the setting for 'explicit' is set to true, add a string to the system prompt
@@ -109,19 +105,19 @@ def construct_multi_character_system_prompt(characters, initial_message):
     if multi_character_settings['stage_directions'] and multi_character_settings['stage_directions']=='true':
         final_system_prompt = final_system_prompt + '\n\n -Stage Directions: Include minimal stage directions for added comedy, action, drama, or plot progression.'
 
-    final_system_prompt = final_system_prompt + '\n\nList of the universe of characters by character id, with the format:\n\n[CHARACTER_ID]:[CHARACTER_PROMPT]\n\n*** START OF FULL CHARACTER LIST ***'
+    final_system_prompt = final_system_prompt + '\n\nList of the characters by character id, with the format:\n\n{\"einstein": \"character-a\", \"character_prompt\": \"albert einstein\"}\n\n*** START OF FULL CHARACTER LIST ***'
     # loop through characters and add them to the system prompt
     for character_id in characters:
         # logging.info('character id: ' + character_id)
         character_data = characters[character_id]
         # logging.info('character data: ' + str(character_data))
-        final_system_prompt = final_system_prompt + '\n\n[' + character_id + ']: ' + '[' + character_data['prompt'] + ']'
+        final_system_prompt = final_system_prompt + '\n\n{\"character_id\": \"' + character_id + '\", \"character_prompt\": \"' + character_data['prompt'] + '\"}'
 
     final_system_prompt = final_system_prompt + '\n\n*** END OF FULL CHARACTER LIST ***'
 
-    final_system_prompt = final_system_prompt + '\n\nREMEMBER: this response should only include one character\'s dialog.'
+    final_system_prompt = final_system_prompt + '\n\nIMPORTANT: Each response must be valid JSON always beginning with\n\n{\"character_id\": "...", ...}\n\nand should ONLY include content from ONE character, using the appropriate case-sensitive character_id value from the list above.'
 
-    # logging.info('final multicharacter system prompt: ' + final_system_prompt)
+    logging.info('final multicharacter system prompt: ' + final_system_prompt)
     return final_system_prompt
 
 def chatgpt(api_key, conversation, character_id, character_data, user_input):
@@ -131,11 +127,12 @@ def chatgpt(api_key, conversation, character_id, character_data, user_input):
 
     messages_input = conversation.copy()
     prompt = [{"role": "system", "content": get_system_prompt() + character_data['prompt']}]
-
     messages_input.insert(0, prompt[0])
-    # logging.info("prompt: " + str(prompt))
+
     completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-0613",
+        # model="gpt-3.5-turbo-0613",
+        model="gpt-3.5-turbo",
+        # model="gpt-4",
         temperature=temperature,
         frequency_penalty=frequency_penalty,
         presence_penalty=presence_penalty,
@@ -165,7 +162,6 @@ def chatgpt_multi_character(api_key, conversation, multi_character_system_prompt
     messages_input = conversation.copy()
     messages_input.insert(0, {"role": "system", "content": multi_character_system_prompt})
 
-    # logging.info("complete prompt: " + str(messages_input))
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0613",
         temperature=temperature,
@@ -173,30 +169,30 @@ def chatgpt_multi_character(api_key, conversation, multi_character_system_prompt
         presence_penalty=presence_penalty,
         messages=messages_input)
     chat_response = completion['choices'][0]['message']['content']
-    # logging.info('chat response: ' + chat_response)
-    # conversation.append({"role": "assistant", "content": chat_response})
+    conversation.append({"role": "assistant", "content": chat_response})
     set_status('finished_generating_response')
-
-    # from the chat_response, parse out the character id from the beginning of
-    # the response string, it always starts in the form of "[character_id]: ..."
-    # and we need to escape and use parenthesis properly in the re.search method
-
+    response_text = None
     try:
-        character_id = re.search(r'\[.*?\]:', chat_response).group(0)
-        # specifically trim out the square brackets and colon
-        character_id = character_id[1:-2]
+        # parse chat_response as json into a json dictionary object in python
+        chat_response_json = json.loads(chat_response)
+        logging.info('chat response: ' + str(chat_response_json))
+        # get the character id from the chat response
+        character_id = chat_response_json['character_id']
         logging.info('character id: ' + character_id)
+        response_text = chat_response_json['response_text']
     except:
-        logging.error('error parsing character id from chat response: ' + chat_response)
-        logging.error('using the last character id instead: ' + last_character_id)
-        character_id = last_character_id
+        logging.error('error parsing chat response: ' + chat_response)
+        logging.error('using the last character id instead: ' + current_character_id)
+        character_id = current_character_id
 
     current_character_id = character_id
-    logging.info('current character id3: ' + current_character_id)
 
-    print_colored(f"{character_id}:", f"{chat_response}\n\n")
+    print_colored(f"{current_character_id}:", f"{chat_response}\n\n")
 
-    return chat_response, character_id
+    if response_text:
+        return response_text, current_character_id
+    else:
+        return chat_response, current_character_id
 
 
 def play_waiting_music():
@@ -271,14 +267,11 @@ def record_and_transcribe(playback, duration=8, fs=sample_rate):
     return transcription, playback
 
 def start_talking(character_id=None):
-    global last_character_id, current_character_id
+    global current_character_id
 
      # Check if the character has been switched
-    if last_character_id is not None and last_character_id != character_id:
+    if current_character_id is not None and current_character_id != character_id:
         reset_conversation()
-
-    # Update the last_character_id
-    last_character_id = character_id
 
     character_data = get_current_character_data(character_id)
     current_character_id = character_id
@@ -288,18 +281,20 @@ def start_talking(character_id=None):
         playback = None
         user_message, playback = record_and_transcribe(playback)
         response = chatgpt(api_key, conversation, character_id, character_data, user_message)
-        # print_colored("ChatBot:", f"{response}\n\n")
-        user_message_without_generate_image = re.sub(r'(Response:|Narration:|Image: generate_image:.*|)', '', response).strip()
-        text_to_speech(user_message_without_generate_image, character_data['voice_id'], playback)
+        response_text = None
+        try:
+            # parse the response as json into a json dictionary object in python
+            response_json = json.loads(response)
+            # get the character id from the chat response
+            character_id = response_json['character_id']
+            logging.info('character id: ' + character_id)
+            response_text = response_json['response_text']
+        except:
+            logging.error('error parsing chat response: ' + response)
+            logging.error('using the last character id instead: ' + current_character_id)
+            character_id = current_character_id
 
-def strip_character_prefix(message):
-    """Remove character prefix "[character_id]:" from the message."""
-    try:
-        return re.sub(r'^.+?:\s', '', message)
-    except:
-        logging.error('error stripping character prefix from message: ' + message)
-        return message
-
+        text_to_speech(response_text, character_data['voice_id'], playback)
 
 def start_multi_character_talking(characters, initial_message="hello"):
     global current_character_id
@@ -310,6 +305,7 @@ def start_multi_character_talking(characters, initial_message="hello"):
     multi_character_system_prompt = construct_multi_character_system_prompt(characters, initial_message)
     initial_prompt = chatgpt_multi_character_initial_prompt(initial_message)
     last_character_response = initial_prompt
+    logging.info('initial prompt: ' + initial_prompt)
 
     while is_conversation_active():
         response, responding_character_id = chatgpt_multi_character(api_key, conversation, multi_character_system_prompt, last_character_response)
@@ -317,7 +313,7 @@ def start_multi_character_talking(characters, initial_message="hello"):
         logging.info('current character id: ' + current_character_id)
         voice_id_to_use = characters[responding_character_id]['voice_id']
         logging.info('using voice id for ' + responding_character_id + ': ' + voice_id_to_use)
-        text_to_speech(strip_character_prefix(response), voice_id_to_use)
+        text_to_speech(response, voice_id_to_use)
         last_character_response = response
 
 if __name__ == "__main__":
