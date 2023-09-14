@@ -86,11 +86,7 @@ def construct_multi_character_system_prompt(characters, initial_message):
     final_system_prompt = multi_character_settings['system_prompt']
     # logging.info('original system prompt: ' + final_system_prompt)
 
-    # add the user's initial message to the system prompt
-    # final_system_prompt = final_system_prompt + '\n\n' + 'Setting:'
-    # final_system_prompt = final_system_prompt + '\n\n' + initial_message
-
-    # final_system_prompt = final_system_prompt + '\n\n' + 'Ensure that characters respond to the most recent statement or question directed at them.'
+    # final_system_prompt = final_system_prompt + '\n\n' + 'Ensure that character responds to the most recent statement or question directed at them.'
 
     final_system_prompt = final_system_prompt + '\n\n' + '[USER-SET INSTRUCTIONS]'
     # if there is a setting for response_sentence_limit int, load it
@@ -111,17 +107,17 @@ def construct_multi_character_system_prompt(characters, initial_message):
     if multi_character_settings['stage_directions'] and multi_character_settings['stage_directions']=='true':
         final_system_prompt = final_system_prompt + '\n\n -Stage Directions: Include minimal stage directions for added comedy, action, drama, or plot progression.'
 
-    final_system_prompt = final_system_prompt + '\n\nList of the characters by character id, with the format:\n\n[CHARACTER_ID]:[CHARACTER_PROMPT]\n\n*** START OF FULL CHARACTER LIST ***'
+    final_system_prompt = final_system_prompt + '\n\nList of the characters by character id, with the format:\n\n{\"einstein": \"character-a\", \"character_prompt\": \"albert einstein\"}\n\n*** START OF FULL CHARACTER LIST ***'
     # loop through characters and add them to the system prompt
     for character_id in characters:
         # logging.info('character id: ' + character_id)
         character_data = characters[character_id]
         # logging.info('character data: ' + str(character_data))
-        final_system_prompt = final_system_prompt + '\n\n[' + character_id + ']: ' + '[' + character_data['prompt'] + ']'
+        final_system_prompt = final_system_prompt + '\n\n{\"character_id\": \"' + character_id + '\", \"character_prompt\": \"' + character_data['prompt'] + '\"}'
 
     final_system_prompt = final_system_prompt + '\n\n*** END OF FULL CHARACTER LIST ***'
 
-    final_system_prompt = final_system_prompt + '\n\nIMPORTANT: Each response must be valid JSON always beginning with\n\n{\"character_id\":\n\nand should ONLY include dialogue or actions from ONE character'
+    final_system_prompt = final_system_prompt + '\n\nIMPORTANT: Each response must be valid JSON always beginning with\n\n{\"character_id\": "...", ...}\n\nand should ONLY include content from ONE character, using the appropriate case-sensitive character_id value from the list above.'
 
     logging.info('final multicharacter system prompt: ' + final_system_prompt)
     return final_system_prompt
@@ -178,7 +174,7 @@ def chatgpt_multi_character(api_key, conversation, multi_character_system_prompt
         messages=messages_input)
     chat_response = completion['choices'][0]['message']['content']
     # logging.info('chat response: ' + chat_response)
-    # conversation.append({"role": "assistant", "content": chat_response})
+    conversation.append({"role": "assistant", "content": chat_response})
     set_status('finished_generating_response')
     response_text = None
     try:
