@@ -23,16 +23,14 @@ logging.basicConfig(level=logging.INFO)
 
 conversation_state = 'init'
 current_character_id = None
-last_character_id = None
 
 init()
 
 def set_status(new_status):
-    global status, last_character_id, current_character_id
+    global status, current_character_id
     status = new_status
     status_data = {'status_string': status,
-                   'character_id': current_character_id,
-                   'last_character_id': last_character_id}
+                   'character_id': current_character_id}
     logging.info('status data: ' + str(status_data))
     emit_status(status_data)
 
@@ -129,9 +127,8 @@ def chatgpt(api_key, conversation, character_id, character_data, user_input):
 
     messages_input = conversation.copy()
     prompt = [{"role": "system", "content": get_system_prompt() + character_data['prompt']}]
-
     messages_input.insert(0, prompt[0])
-    # logging.info("prompt: " + str(prompt))
+
     completion = openai.ChatCompletion.create(
         # model="gpt-3.5-turbo-0613",
         model="gpt-3.5-turbo",
@@ -165,7 +162,6 @@ def chatgpt_multi_character(api_key, conversation, multi_character_system_prompt
     messages_input = conversation.copy()
     messages_input.insert(0, {"role": "system", "content": multi_character_system_prompt})
 
-    # logging.info("complete prompt: " + str(messages_input))
     completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0613",
         temperature=temperature,
@@ -173,7 +169,6 @@ def chatgpt_multi_character(api_key, conversation, multi_character_system_prompt
         presence_penalty=presence_penalty,
         messages=messages_input)
     chat_response = completion['choices'][0]['message']['content']
-    # logging.info('chat response: ' + chat_response)
     conversation.append({"role": "assistant", "content": chat_response})
     set_status('finished_generating_response')
     response_text = None
@@ -185,14 +180,12 @@ def chatgpt_multi_character(api_key, conversation, multi_character_system_prompt
         character_id = chat_response_json['character_id']
         logging.info('character id: ' + character_id)
         response_text = chat_response_json['response_text']
-        # logging.info('response text: ' + response_text)
     except:
         logging.error('error parsing chat response: ' + chat_response)
         logging.error('using the last character id instead: ' + current_character_id)
         character_id = current_character_id
 
     current_character_id = character_id
-    # logging.info('current character id3: ' + current_character_id)
 
     print_colored(f"{current_character_id}:", f"{chat_response}\n\n")
 
@@ -208,7 +201,6 @@ def play_waiting_music():
 
 
 def text_to_speech(text, voice_id, playback=None):
-    # logging.info('text to say: ' + str(text))
     set_status('synthesizing_voice')
     response = get_speech_audio(text, voice_id)
     if playback is not None:
@@ -275,14 +267,11 @@ def record_and_transcribe(playback, duration=8, fs=sample_rate):
     return transcription, playback
 
 def start_talking(character_id=None):
-    global last_character_id, current_character_id
+    global current_character_id
 
      # Check if the character has been switched
-    if last_character_id is not None and last_character_id != character_id:
+    if current_character_id is not None and current_character_id != character_id:
         reset_conversation()
-
-    # Update the last_character_id
-    last_character_id = character_id
 
     character_data = get_current_character_data(character_id)
     current_character_id = character_id
@@ -292,9 +281,20 @@ def start_talking(character_id=None):
         playback = None
         user_message, playback = record_and_transcribe(playback)
         response = chatgpt(api_key, conversation, character_id, character_data, user_message)
-        # print_colored("ChatBot:", f"{response}\n\n")
-        user_message_without_generate_image = re.sub(r'(Response:|Narration:|Image: generate_image:.*|)', '', response).strip()
-        text_to_speech(user_message_without_generate_image, character_data['voice_id'], playback)
+        response_text = None
+        try:
+            # parse the response as json into a json dictionary object in python
+            response_json = json.loads(response)
+            # get the character id from the chat response
+            character_id = response_json['character_id']
+            logging.info('character id: ' + character_id)
+            response_text = response_json['response_text']
+        except:
+            logging.error('error parsing chat response: ' + response)
+            logging.error('using the last character id instead: ' + current_character_id)
+            character_id = current_character_id
+
+        text_to_speech(response_text, character_data['voice_id'], playback)
 
 def start_multi_character_talking(characters, initial_message="hello"):
     global current_character_id
