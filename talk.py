@@ -163,7 +163,7 @@ def chatgpt_multi_character_initial_prompt(initial_user_message):
 def chatgpt_multi_character(api_key, conversation, multi_character_system_prompt, last_character_output):
     global current_character_id
 
-    set_status('generating_multicharacter_response')
+    set_status('generating_multicharacter_response', 'determining_character_id')
     openai.api_key = api_key
 
     conversation.append({"role": "user", "content": last_character_output})
@@ -178,7 +178,7 @@ def chatgpt_multi_character(api_key, conversation, multi_character_system_prompt
         messages=messages_input)
     chat_response = completion['choices'][0]['message']['content']
     conversation.append({"role": "assistant", "content": chat_response})
-    set_status('finished_generating_response')
+    set_status('finished_generating_response', 'determining_character_id')
     response_text = None
     try:
         # parse chat_response as json into a json dictionary object in python
@@ -208,7 +208,7 @@ def play_waiting_music():
     return _play_with_simpleaudio(audio)
 
 
-def text_to_speech(text, voice_id, character_id=None):
+def text_to_speech(text, voice_id, last_character_id):
     global playback
 
     set_status('synthesizing_voice')
@@ -217,7 +217,7 @@ def text_to_speech(text, voice_id, character_id=None):
         try:
             # playback.stop()
             playback.wait_done()
-            set_status('done_speaking', character_id)
+            set_status('done_speaking', last_character_id)
         except:
             logging.error('error stopping playback')
     set_status('speaking')
@@ -345,7 +345,7 @@ def start_multi_character_talking(characters, initial_message="hello"):
     initial_prompt = chatgpt_multi_character_initial_prompt(initial_message)
     last_character_response = initial_prompt
     logging.info('initial prompt: ' + initial_prompt)
-    last_character_id = current_character_id
+    last_character_id = None
 
     while is_conversation_active():
         response, responding_character_id = chatgpt_multi_character(api_key, conversation, multi_character_system_prompt, last_character_response)
@@ -354,7 +354,6 @@ def start_multi_character_talking(characters, initial_message="hello"):
         voice_id_to_use = characters[responding_character_id]['voice_id']
         logging.info('using voice id for ' + responding_character_id + ': ' + voice_id_to_use)
         playback = text_to_speech(response, voice_id_to_use, last_character_id)
-        last_character_id = current_character_id
         # if playback is not None:
         #     logging.info('playback is happening')
         #     playback.wait_done()
@@ -366,6 +365,7 @@ def start_multi_character_talking(characters, initial_message="hello"):
         logging.info('moving on to play next audio')
         play_from_queue(responding_character_id)
         last_character_response = response
+        last_character_id = responding_character_id
 
 
 if __name__ == "__main__":
