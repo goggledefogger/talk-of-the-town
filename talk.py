@@ -12,6 +12,7 @@ import time
 import subprocess
 import random
 import json
+from queue import Queue
 
 from database import get_current_character_data, get_system_prompt, reset_system_prompt, get_multi_character_settings
 from audio_device import get_default_audio_input_device, get_device_metadata
@@ -23,6 +24,8 @@ logging.basicConfig(level=logging.INFO)
 
 conversation_state = 'init'
 current_character_id = None
+audio_queue = Queue()
+playback = None
 
 init()
 
@@ -200,36 +203,52 @@ def play_waiting_music():
     return _play_with_simpleaudio(audio)
 
 
-def text_to_speech(text, voice_id, playback=None):
+def text_to_speech(text, voice_id):
+    global playback
+
     set_status('synthesizing_voice')
     response = get_speech_audio(text, voice_id)
     if playback is not None:
         try:
-            playback.stop()
+            # playback.stop()
+            playback.wait_done()
         except:
             logging.error('error stopping playback')
     set_status('speaking')
     if response.status_code == 200:
-        play_audio_file('output.mp3')
-        set_status('done_speaking')
+        queue_audio('output.mp3')
+        set_status('audio_queued')
     else:
         # logging.error('Error:', response.text)
         set_status('error_text_to_speech')
         logging.info('continuing on to use google cloud as a fallback')
         try:
             google_text_to_speech(text, voice_id)
-            play_audio_file('output.mp3')
+            queue_audio('output.mp3')
         except Exception as e:
             logging.error('error using google cloud: ' + str(e))
             logging.info('continuing on to use espeak as a fallback')
             # since the eleven labs response had an error,
             # we'll just play the text-to-speech using espeak
             subprocess.run(["espeak", text])
-        set_status('done_speaking')
 
-def play_audio_file(filepath):
-    audio = AudioSegment.from_mp3('output.mp3')
-    play(audio)
+def play_audio_file_async(filepath):
+    audio = AudioSegment.from_mp3(filepath)
+    return _play_with_simpleaudio(audio)
+
+def play_from_queue():
+    global playback
+
+    if playback is not None:
+        playback.wait_done()
+
+    while not audio_queue.empty():
+        audio_file = audio_queue.get()
+        playback = play_audio_file_async(audio_file)
+
+def queue_audio(filepath):
+    audio_queue.put(filepath)
+
 
 character_colors = {}
 
@@ -246,7 +265,9 @@ def print_colored(character_id, text):
 
     print(color + f"{character_id}: {text}" + Style.RESET_ALL, end="")
 
-def record_and_transcribe(playback, duration=8, fs=sample_rate):
+def record_and_transcribe(duration=8, fs=sample_rate):
+    global playback
+
     set_status("recording")
     logging.info('Recording...')
     myrecording = sd.rec(int(duration * fs), samplerate=fs, channels=num_channels)
@@ -258,16 +279,21 @@ def record_and_transcribe(playback, duration=8, fs=sample_rate):
     set_status("transcribing")
     logging.info('Recording complete.')
     playback = play_waiting_music()
+    logging.info('continuing on2')
     filename = 'myrecording.wav'
     sf.write(filename, myrecording, fs)
+    logging.info('continuing on3')
     with open(filename, "rb") as file:
+        logging.info('continuing on4')
         openai.api_key = api_key
         result = openai.Audio.transcribe("whisper-1", file)
+        logging.info('continuing on5')
+    logging.info('continuing on6')
     transcription = result['text']
-    return transcription, playback
+    return transcription
 
 def start_talking(character_id=None):
-    global current_character_id
+    global current_character_id, playback
 
      # Check if the character has been switched
     if current_character_id is not None and current_character_id != character_id:
@@ -279,9 +305,10 @@ def start_talking(character_id=None):
 
     while is_conversation_active():
         playback = None
-        user_message, playback = record_and_transcribe(playback)
+        user_message = record_and_transcribe()
         response = chatgpt(api_key, conversation, character_id, character_data, user_message)
         response_text = None
+
         try:
             # parse the response as json into a json dictionary object in python
             response_json = json.loads(response)
@@ -294,10 +321,14 @@ def start_talking(character_id=None):
             logging.error('using the last character id instead: ' + current_character_id)
             character_id = current_character_id
 
-        text_to_speech(response_text, character_data['voice_id'], playback)
+        text_to_speech(response_text, character_data['voice_id'])
+        play_from_queue()
+        if playback is not None:
+            playback.wait_done()
+
 
 def start_multi_character_talking(characters, initial_message="hello"):
-    global current_character_id
+    global current_character_id, playback
 
     reset_conversation()
     reset_system_prompt()
@@ -313,7 +344,15 @@ def start_multi_character_talking(characters, initial_message="hello"):
         logging.info('current character id: ' + current_character_id)
         voice_id_to_use = characters[responding_character_id]['voice_id']
         logging.info('using voice id for ' + responding_character_id + ': ' + voice_id_to_use)
-        text_to_speech(response, voice_id_to_use)
+        playback = text_to_speech(response, voice_id_to_use)
+        if playback is not None:
+            logging.info('playback is happening')
+            playback.wait_done()
+        else:
+            logging.info('no playback')
+
+        logging.info('moving on to play next audio')
+        play_from_queue()
         last_character_response = response
 
 if __name__ == "__main__":
