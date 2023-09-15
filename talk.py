@@ -220,6 +220,11 @@ def text_to_speech(text, voice_id, last_character_id):
             set_status('done_speaking', last_character_id)
         except:
             logging.error('error stopping playback')
+
+    if not is_conversation_active():
+        set_status('done_speaking', current_character_id)
+        return
+
     set_status('speaking')
     if response.status_code == 200:
         queue_audio('output.mp3')
