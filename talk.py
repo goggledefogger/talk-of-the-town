@@ -29,11 +29,16 @@ playback = None
 
 init()
 
-def set_status(new_status):
+def set_status(new_status, character_id=None):
     global status, current_character_id
     status = new_status
+
+    character_id_to_use = current_character_id
+    if character_id is not None:
+        character_id_to_use = character_id
+
     status_data = {'status_string': status,
-                   'character_id': current_character_id}
+                   'character_id': character_id_to_use}
     logging.info('status data: ' + str(status_data))
     emit_status(status_data)
 
@@ -203,7 +208,7 @@ def play_waiting_music():
     return _play_with_simpleaudio(audio)
 
 
-def text_to_speech(text, voice_id):
+def text_to_speech(text, voice_id, character_id=None):
     global playback
 
     set_status('synthesizing_voice')
@@ -212,6 +217,7 @@ def text_to_speech(text, voice_id):
         try:
             # playback.stop()
             playback.wait_done()
+            set_status('done_speaking', character_id)
         except:
             logging.error('error stopping playback')
     set_status('speaking')
@@ -236,11 +242,13 @@ def play_audio_file_async(filepath):
     audio = AudioSegment.from_mp3(filepath)
     return _play_with_simpleaudio(audio)
 
-def play_from_queue():
+def play_from_queue(character_id=None):
     global playback
 
-    if playback is not None:
-        playback.wait_done()
+    # if playback is not None:
+    #     playback.wait_done()
+    #     logging.info('this one3')
+    #     set_status('done_speaking', character_id)
 
     while not audio_queue.empty():
         audio_file = audio_queue.get()
@@ -337,6 +345,7 @@ def start_multi_character_talking(characters, initial_message="hello"):
     initial_prompt = chatgpt_multi_character_initial_prompt(initial_message)
     last_character_response = initial_prompt
     logging.info('initial prompt: ' + initial_prompt)
+    last_character_id = current_character_id
 
     while is_conversation_active():
         response, responding_character_id = chatgpt_multi_character(api_key, conversation, multi_character_system_prompt, last_character_response)
@@ -344,16 +353,20 @@ def start_multi_character_talking(characters, initial_message="hello"):
         logging.info('current character id: ' + current_character_id)
         voice_id_to_use = characters[responding_character_id]['voice_id']
         logging.info('using voice id for ' + responding_character_id + ': ' + voice_id_to_use)
-        playback = text_to_speech(response, voice_id_to_use)
-        if playback is not None:
-            logging.info('playback is happening')
-            playback.wait_done()
-        else:
-            logging.info('no playback')
+        playback = text_to_speech(response, voice_id_to_use, last_character_id)
+        last_character_id = current_character_id
+        # if playback is not None:
+        #     logging.info('playback is happening')
+        #     playback.wait_done()
+        #     logging.info('this one')
+        #     set_status('done_speaking', current_character_id)
+        # else:
+        #     logging.info('no playback')
 
         logging.info('moving on to play next audio')
-        play_from_queue()
+        play_from_queue(responding_character_id)
         last_character_response = response
+
 
 if __name__ == "__main__":
     start_talking()
