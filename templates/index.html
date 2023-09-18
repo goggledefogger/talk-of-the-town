@@ -11,6 +11,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" defer></script>
 
   <script src="{{ url_for('static', filename='common.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='audio.js') }}" defer></script>
   <script src="{{ url_for('static', filename='animations.js') }}" defer></script>
   <script src="{{ url_for('static', filename='character-component.js') }}" defer></script>
   <script src="{{ url_for('static', filename='character-edit.js') }}" defer></script>
@@ -26,6 +27,9 @@
         Start Conversation
       </button>
       <button id="stopConversationButton" onclick="stopConversation()" disabled>Stop Conversation</button>
+      <button id="startRecordingButton" onclick="initiateRecording()">Start Recording</button>
+      <button id="stopRecordingButton" onclick="initiateStopRecording()" disabled>Stop Recording</button>
+      <audio id="responseAudio" controls></audio>
     </div>
 
     <form id="configForm" action="/update-character" method="post"

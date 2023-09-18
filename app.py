@@ -1,8 +1,11 @@
-from flask import Flask, request, jsonify, render_template, send_from_directory
+from flask import Flask, request, jsonify, render_template, send_from_directory, send_file
+from flask_cors import CORS
 from pubsub import pub
 import json
 import logging
 import eventlet
+import datetime
+import os
 
 eventlet.monkey_patch()
 
@@ -15,6 +18,7 @@ from socket_controller import socketio, set_app
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
+CORS(app)
 
 socketio.init_app(app)
 socket_controller = set_app(app)
@@ -183,6 +187,27 @@ def start_multi_character_conversation_endpoint():
         eventlet.spawn(start_multi_character_talking, characters, initial_message)
         return jsonify({'conversation_state': 'started'})
     return jsonify({'conversation_state': 'error'})
+
+@app.route('/process_audio', methods=['POST'])
+def process_audio():
+    if 'audio' not in request.files:
+        return jsonify({'error': 'No audio file provided'}), 400
+
+    audio_file = request.files['audio']
+
+    if audio_file:
+        # set the filename to the current timestamp (without the decimal precision)
+        filename = str(datetime.datetime.now().timestamp()).split('.')[0] + '.wav'
+
+        # filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        filepath = os.path.join('recorded_files', filename)
+        audio_file.save(filepath)
+
+        # Now, you can process the saved audio file, e.g., transcribe, generate a response, etc.
+        # For now, let's just send the same audio back as a response
+        return send_file(filepath, mimetype='audio/wav')
+
+    return jsonify({'error': 'Invalid file type'}), 400
 
 
 if __name__ == '__main__':
