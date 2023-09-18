@@ -3,7 +3,7 @@ let audioChunks = [];
 let recordingStatus = null;
 let recorderReady = false;
 
-function setupRecorder() {
+function setupRecorder(characterId) {
   recordingStatus = 'ready';
   recorderReady = true;
   return navigator.mediaDevices
@@ -19,7 +19,7 @@ function setupRecorder() {
         recordingStatus = 'stopping';
         const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
         try {
-          return sendDataToServer(audioBlob);
+          return sendDataToServer(characterId, audioBlob);
         } catch (error) {
           recordingStatus = 'error';
           return Promise.reject(error);
@@ -32,12 +32,12 @@ function setupRecorder() {
     });
 }
 
-function startRecording() {
+function startRecording(characterId) {
   // create a promise that either will be resolved when the recorder is ready
   // or if it's already ready, it continues on
   const recorderReadyPromise = recorderReady
     ? Promise.resolve()
-    : setupRecorder();
+    : setupRecorder(characterId);
   // now start the promise chain
   recorderReadyPromise.then(() => {
     audioChunks = [];
@@ -49,10 +49,11 @@ function stopRecording() {
   mediaRecorder.stop();
 }
 
-function sendDataToServer(audioBlob) {
+function sendDataToServer(characterId, audioBlob) {
   recordingStatus = 'sending';
   const formData = new FormData();
   formData.append('audio', audioBlob, 'audio.wav');
+  formData.append('character_id', characterId);
 
   return fetch('/process_audio', {
     method: 'POST',

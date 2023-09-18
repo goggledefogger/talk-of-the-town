@@ -186,10 +186,11 @@ function startConversation() {
 }
 
 function initiateStartRecording() {
+  const characterId = characterComponent.getCurrentCharacter();
   // enable the Stop Recording button and disable the Start Recording button
   document.getElementById('startRecordingButton').disabled = true;
   document.getElementById('stopRecordingButton').disabled = false;
-  startRecording();
+  startRecording(characterId);
 }
 
 function initiateStopRecording() {

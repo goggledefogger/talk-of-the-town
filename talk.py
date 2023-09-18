@@ -254,19 +254,24 @@ def record_and_transcribe(playback, duration=8, fs=sample_rate):
     # with the socketio emit so now we're doing it this way
     time.sleep(duration)
     sd.stop()
-
-    set_status("transcribing")
     logging.info('Recording complete.')
     playback = play_waiting_music()
     filename = 'myrecording.wav'
     sf.write(filename, myrecording, fs)
-    with open(filename, "rb") as file:
+
+    transcription = transcribe_audio(myrecording)
+    return transcription, playback
+
+def transcribe_audio(audio_file):
+    set_status("transcribing")
+
+    with open(audio_file, "rb") as file:
         openai.api_key = api_key
         result = openai.Audio.transcribe("whisper-1", file)
     transcription = result['text']
-    return transcription, playback
+    return transcription
 
-def start_talking(character_id=None):
+def start_talking(character_id=None, user_recording=None):
     global current_character_id
 
      # Check if the character has been switched
@@ -279,7 +284,8 @@ def start_talking(character_id=None):
 
     while is_conversation_active():
         playback = None
-        user_message, playback = record_and_transcribe(playback)
+        # user_message, playback = record_and_transcribe(playback)
+        user_message = transcribe_audio(user_recording)
         response = chatgpt(api_key, conversation, character_id, character_data, user_message)
         response_text = None
         try:
