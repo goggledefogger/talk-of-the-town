@@ -51,10 +51,11 @@ def stop_conversation_endpoint():
     set_conversation_state('stopped')
     return jsonify({'conversation_state': 'stopped'})
 
-def initiate_conversation(character_id=None):
+def initiate_conversation(character_id=None, audio_file=None):
     logging.info('character_id: ' + str(character_id))
+    logging.info('audio_file: ' + str(audio_file))
     if is_conversation_active():
-        start_talking(character_id)  # Call the function from talk.py
+        start_talking(character_id, audio_file)  # Call the function from talk.py
 
 
 # get the character data from the database
@@ -194,6 +195,8 @@ def process_audio():
         return jsonify({'error': 'No audio file provided'}), 400
 
     audio_file = request.files['audio']
+    character_id = request.form.get('character_id')
+    logging.info('character_id: ' + str(character_id))
 
     if audio_file:
         # set the filename to the current timestamp (without the decimal precision)
@@ -203,11 +206,16 @@ def process_audio():
         filepath = os.path.join('recorded_files', filename)
         audio_file.save(filepath)
 
-        # Now, you can process the saved audio file, e.g., transcribe, generate a response, etc.
-        # For now, let's just send the same audio back as a response
-        return send_file(filepath, mimetype='audio/wav')
+        return start_or_continue_conversation(character_id, filepath)
 
     return jsonify({'error': 'Invalid file type'}), 400
+
+def start_or_continue_conversation(character_id, audio_filepath=None):
+    logging.info('starting or continuing conversation')
+    if not is_conversation_active():
+        set_conversation_state('started')
+        # Start a new conversation and return its audio
+        initiate_conversation(character_id, audio_filepath)
 
 
 if __name__ == '__main__':
