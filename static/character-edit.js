@@ -185,12 +185,18 @@ function startConversation() {
     .then(updateUI);
 }
 
-function initiateRecording() {
-    startRecording();
-    // wait for 5 seconds and then stop recording
-    setTimeout(() => {
-      stopRecording();
-    }, 5000);
+function initiateStartRecording() {
+  // enable the Stop Recording button and disable the Start Recording button
+  document.getElementById('startRecordingButton').disabled = true;
+  document.getElementById('stopRecordingButton').disabled = false;
+  startRecording();
+}
+
+function initiateStopRecording() {
+  // enable the Start Recording button and disable the Stop Recording button
+  document.getElementById('startRecordingButton').disabled = false;
+  document.getElementById('stopRecordingButton').disabled = true;
+  stopRecording();
 }
 
 function regenerateCharacterImage() {
