@@ -185,6 +185,14 @@ function startConversation() {
     .then(updateUI);
 }
 
+function initiateRecording() {
+    startRecording();
+    // wait for 5 seconds and then stop recording
+    setTimeout(() => {
+      stopRecording();
+    }, 5000);
+}
+
 function regenerateCharacterImage() {
   const characterId = document.getElementById('mainCharacterComponent').getCurrentCharacter();
   const characterPrompt = characterId.replace(/-/g, ' '); // Convert character_id back to a prompt
