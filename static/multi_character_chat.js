@@ -1,3 +1,5 @@
+serverRequestsQueue = [];
+
 function multiCharacterUpdateUI(viewState) {
   if (viewState.status) {
     // if the viewState.status.character_id exists, pull out the character_id
@@ -12,6 +14,10 @@ function multiCharacterUpdateUI(viewState) {
       if (characterComponent) {
         characterComponent.render(viewState);
       }
+    }
+
+    if (viewState.status.status_string === 'speaking') {
+      continueConversation();
     }
   }
 }
@@ -46,6 +52,7 @@ function selectRandomCharacters(selector1, selector2) {
 }
 
 function startConversation() {
+  conversationState = 'started';
   // loop through all the character-component elements and get the selected character
   const characterComponents = document.querySelectorAll('character-component');
   const character1Id = characterComponents[0].getCurrentCharacter();
@@ -65,5 +72,34 @@ function startConversation() {
     }),
   })
     .then((response) => response.json())
+    .then(updateUI);
+}
+
+function continueConversation() {
+  console.log('continuing conversation, requesting from server')
+  serverRequestsQueue.push(doContinueConversation)
+  if (serverRequestsQueue.length === 1) {
+    doContinueConversation();
+  }
+}
+
+function doContinueConversation() {
+  fetch('/continue-multi-character-conversation', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+    .then((response) => response.json())
+    .then((responseObj) => {
+      // once this request is done, remove it from the queue
+      // and if there is another request in the queue, and
+      // the conversation is still going, start the next request
+      serverRequestsQueue.shift();
+      if (serverRequestsQueue.length > 0 && conversationState === 'started') {
+        serverRequestsQueue[0]();
+      }
+      return Promise.resolve(responseObj);
+    })
     .then(updateUI);
 }

@@ -2,6 +2,7 @@
 const host = window.location.hostname;
 const socket = io.connect('http://' + host + ':5002');
 let serverStatus = null;
+let conversationState = null;
 
 // Listen for the 'status_update' event
 socket.on('status_update', function (data) {
@@ -101,6 +102,7 @@ function updateConversationButtonState(isStarted) {
 }
 
 function stopConversation() {
+  conversationState = 'stopped';
   fetch('/stop-conversation', {
     method: 'POST',
     headers: {

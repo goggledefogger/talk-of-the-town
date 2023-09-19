@@ -3,6 +3,7 @@ let audioChunks = [];
 let recordingStatus = null;
 let recorderReady = false;
 let lastRecordedBlob = null;
+let audioQueue = [];
 
 function setupRecorder() {
   recordingStatus = 'ready';
@@ -99,8 +100,19 @@ function playAudioFromServer(audioBlob) {
 
 socket.on('audio_event', function (data) {
   let audio = new Audio(data.url);
-  audio.play();
-  audio.onended = () => {
-    donePlayingAudio(data.character_id)
-  };
+  // create a queue for playing audio and add this to the queue
+  audioQueue.push(audio);
+  // if the queue is empty, start playing the audio
+  if (audioQueue.length === 1) {
+    audio.play();
+  }
+  // when the audio is done playing, remove it from the queue
+  audio.onended = function () {
+    donePlayingAudio(data.character_id);
+    audioQueue.shift();
+    // if there is more audio in the queue, play it
+    if (audioQueue.length > 0) {
+      audioQueue[0].play();
+    }
+  }
 });

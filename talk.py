@@ -25,6 +25,8 @@ logging.basicConfig(level=logging.INFO)
 conversation_state = 'init'
 current_character_id = None
 PLAY_MODE = 'remote'
+multi_character_system_prompt = None
+loaded_characters = {}
 
 init()
 
@@ -314,6 +316,10 @@ def start_talking(character_id=None, user_recording=None):
     return text_to_speech(response_text, character_data['voice_id'], character_id)
 
 def start_multi_character_talking(characters, initial_message="hello", return_audio=False):
+    global multi_character_system_prompt, last_character_response, loaded_characters
+
+    loaded_characters = characters
+
     reset_conversation()
     reset_system_prompt()
 
@@ -322,13 +328,19 @@ def start_multi_character_talking(characters, initial_message="hello", return_au
     last_character_response = initial_prompt
     logging.info('initial prompt: ' + initial_prompt)
 
-    while is_conversation_active():
-        last_character_response = get_response_text_and_audio(multi_character_system_prompt,
-                                                              characters, last_character_response,
-                                                              return_audio)
 
+    last_character_response = get_response_text_and_audio(multi_character_system_prompt,
+                                                          characters, last_character_response,
+                                                          return_audio)
 
-@RateLimiter(max_calls=1, period=10)  # One call every 10 seconds
+def continue_multi_character_talking(return_audio=False):
+    global multi_character_system_prompt, last_character_response, loaded_characters
+
+    last_character_response = get_response_text_and_audio(multi_character_system_prompt,
+                                                          loaded_characters, last_character_response,
+                                                          return_audio)
+
+@RateLimiter(max_calls=1, period=2)  # One call every 10 seconds
 def get_response_text_and_audio(multi_character_system_prompt, characters,
                                 last_character_response, return_audio):
     global current_character_id, conversation

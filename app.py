@@ -10,7 +10,7 @@ import os
 eventlet.monkey_patch()
 
 from database import update_character_data, get_data, update_data, delete_character_data, set_current_character, create_character, get_characters_by_id
-from talk import start_talking, is_conversation_active, set_conversation_state, get_status, start_multi_character_talking
+from talk import start_talking, is_conversation_active, set_conversation_state, get_status, start_multi_character_talking, continue_multi_character_talking
 from generate_image import generate_image
 from eleven_labs import get_random_voice_id
 from socket_controller import socketio, set_app
@@ -191,6 +191,16 @@ def start_multi_character_conversation_endpoint():
         eventlet.spawn(start_multi_character_talking, characters, initial_message)
         return jsonify({'conversation_state': 'started'})
     return jsonify({'conversation_state': 'error'})
+
+@app.route('/continue-multi-character-conversation', methods=['POST'])
+def continue_multi_character_conversation_endpoint():
+    if not is_conversation_active():
+        return
+
+    # Start a new thread for the conversation to allow other requests to be processed
+    eventlet.spawn(continue_multi_character_talking)
+    return jsonify({'conversation_state': 'started'})
+
 
 @app.route('/process_audio', methods=['POST'])
 def process_audio():
