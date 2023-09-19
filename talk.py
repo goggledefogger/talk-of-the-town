@@ -206,7 +206,7 @@ def text_to_speech(text, voice_id):
 
     set_status('speaking')
     if response.status_code == 200:
-        set_status('done_speaking')
+        set_status('response_audio_created')
         return 'output.mp3'
     else:
         # logging.error('Error:', response.text)
@@ -216,12 +216,13 @@ def text_to_speech(text, voice_id):
             google_text_to_speech(text, voice_id)
         except Exception as e:
             logging.error('error using google cloud: ' + str(e))
-        set_status('done_speaking')
+        set_status('response_audio_created')
         return 'output.mp3'
 
 def play_audio_file(filepath):
     audio = AudioSegment.from_mp3('output.mp3')
     play(audio)
+    set_status('done_speaking')
 
 character_colors = {}
 
