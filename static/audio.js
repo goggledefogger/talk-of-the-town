@@ -2,8 +2,9 @@ let mediaRecorder;
 let audioChunks = [];
 let recordingStatus = null;
 let recorderReady = false;
+let lastRecordedBlob = null;
 
-function setupRecorder(characterId) {
+function setupRecorder() {
   recordingStatus = 'ready';
   recorderReady = true;
   return navigator.mediaDevices
@@ -17,13 +18,8 @@ function setupRecorder(characterId) {
 
       mediaRecorder.onstop = () => {
         recordingStatus = 'stopping';
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        try {
-          return sendDataToServer(characterId, audioBlob);
-        } catch (error) {
-          recordingStatus = 'error';
-          return Promise.reject(error);
-        }
+        lastRecordedBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        document.dispatchEvent(new Event('recording-stopped'));
       };
     })
     .then(() => {
@@ -32,12 +28,12 @@ function setupRecorder(characterId) {
     });
 }
 
-function startRecording(characterId) {
+function startRecording() {
   // create a promise that either will be resolved when the recorder is ready
   // or if it's already ready, it continues on
   const recorderReadyPromise = recorderReady
     ? Promise.resolve()
-    : setupRecorder(characterId);
+    : setupRecorder();
   // now start the promise chain
   recorderReadyPromise.then(() => {
     audioChunks = [];
@@ -46,8 +42,18 @@ function startRecording(characterId) {
 }
 
 function stopRecording() {
+  console.log('stopping recording');
+  // add an additional event handler for when the recording is stopped
   mediaRecorder.stop();
 }
+
+document.addEventListener('recording-stopped', () => {
+  console.log('recording-stopped event fired');
+  const characterId = characterComponent.getCurrentCharacter();
+  return sendDataToServer(characterId, lastRecordedBlob).then(
+    playAudioFromServer
+  );
+});
 
 function sendDataToServer(characterId, audioBlob) {
   recordingStatus = 'sending';
@@ -60,7 +66,7 @@ function sendDataToServer(characterId, audioBlob) {
     body: formData,
   }).then((response) => {
     recordingStatus = 'sent';
-    return response.blob().then(playAudioFromServer);
+    return response.blob();
   });
 }
 

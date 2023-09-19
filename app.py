@@ -55,7 +55,10 @@ def initiate_conversation(character_id=None, audio_file=None):
     logging.info('character_id: ' + str(character_id))
     logging.info('audio_file: ' + str(audio_file))
     if is_conversation_active():
-        start_talking(character_id, audio_file)  # Call the function from talk.py
+        output_file_path = start_talking(character_id, audio_file)  # Call the function from talk.py
+        logging.info('output_file_path: ' + str(output_file_path))
+        return output_file_path
+
 
 
 # get the character data from the database
@@ -214,9 +217,9 @@ def start_or_continue_conversation(character_id, audio_filepath=None):
     logging.info('starting or continuing conversation')
     if not is_conversation_active():
         set_conversation_state('started')
-        # Start a new conversation and return its audio
-        initiate_conversation(character_id, audio_filepath)
-
+    response_audio_filepath = initiate_conversation(character_id, audio_filepath)
+    logging.info('file path: ' + response_audio_filepath)
+    return send_file(response_audio_filepath, mimetype="audio/wav")
 
 if __name__ == '__main__':
     socketio.run(app, host="0.0.0.0", port=5002, debug=True)
