@@ -174,6 +174,12 @@ def chatgpt_multi_character(api_key, conversation, multi_character_system_prompt
     conversation.append({"role": "assistant", "content": chat_response})
     set_status('finished_generating_response')
     response_text = None
+
+    # in case the conversation was stopped by the user while
+    # the response was being generated, return early
+    if not is_conversation_active():
+        return None, None
+
     try:
         # parse chat_response as json into a json dictionary object in python
         chat_response_json = json.loads(chat_response)
@@ -329,6 +335,12 @@ def get_response_text_and_audio(multi_character_system_prompt, characters,
     logging.info('getting response text and audio')
 
     response, responding_character_id = chatgpt_multi_character(api_key, conversation, multi_character_system_prompt, last_character_response)
+
+    # if the response was None, that means the conversation
+    # was intentionally stopped, so no need to respond any further
+    if response is None:
+        return None
+
     current_character_id = responding_character_id
     logging.info('current character id: ' + current_character_id)
     voice_id_to_use = characters[responding_character_id]['voice_id']
