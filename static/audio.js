@@ -52,7 +52,15 @@ document.addEventListener('recording-stopped', () => {
   const characterId = characterComponent.getCurrentCharacter();
   return sendDataToServer(characterId, lastRecordedBlob).then(
     playAudioFromServer
-  );
+  ).then(() => {
+    console.log('done playing audio done')
+    updateUI({
+      status: {
+        status_string: 'done_speaking',
+        character_id: characterId
+      }
+    });
+  });
 });
 
 function sendDataToServer(characterId, audioBlob) {
@@ -75,5 +83,12 @@ function playAudioFromServer(audioBlob) {
   const audioUrl = URL.createObjectURL(audioBlob);
   const audio = new Audio(audioUrl);
   audio.play();
-  return Promise.resolve();
+  // create a promise that will be resolved when the audio is done playing
+  return new Promise((resolve) => {
+    audio.onended = () => {
+      console.log('audio ended');
+      resolve();
+    };
+  });
+
 }
