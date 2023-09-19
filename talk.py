@@ -200,32 +200,24 @@ def play_waiting_music():
     return _play_with_simpleaudio(audio)
 
 
-def text_to_speech(text, voice_id, playback=None):
+def text_to_speech(text, voice_id):
     set_status('synthesizing_voice')
     response = get_speech_audio(text, voice_id)
-    if playback is not None:
-        try:
-            playback.stop()
-        except:
-            logging.error('error stopping playback')
+
     set_status('speaking')
     if response.status_code == 200:
-        play_audio_file('output.mp3')
         set_status('done_speaking')
+        return 'output.mp3'
     else:
         # logging.error('Error:', response.text)
         set_status('error_text_to_speech')
         logging.info('continuing on to use google cloud as a fallback')
         try:
             google_text_to_speech(text, voice_id)
-            play_audio_file('output.mp3')
         except Exception as e:
             logging.error('error using google cloud: ' + str(e))
-            logging.info('continuing on to use espeak as a fallback')
-            # since the eleven labs response had an error,
-            # we'll just play the text-to-speech using espeak
-            subprocess.run(["espeak", text])
         set_status('done_speaking')
+        return 'output.mp3'
 
 def play_audio_file(filepath):
     audio = AudioSegment.from_mp3('output.mp3')
@@ -282,25 +274,23 @@ def start_talking(character_id=None, user_recording=None):
     current_character_id = character_id
     # logging.info('character data: ' + str(character_data))
 
-    while is_conversation_active():
-        playback = None
-        # user_message, playback = record_and_transcribe(playback)
-        user_message = transcribe_audio(user_recording)
-        response = chatgpt(api_key, conversation, character_id, character_data, user_message)
-        response_text = None
-        try:
-            # parse the response as json into a json dictionary object in python
-            response_json = json.loads(response)
-            # get the character id from the chat response
-            character_id = response_json['character_id']
-            logging.info('character id: ' + character_id)
-            response_text = response_json['response_text']
-        except:
-            logging.error('error parsing chat response: ' + response)
-            logging.error('using the last character id instead: ' + current_character_id)
-            character_id = current_character_id
+    # user_message, playback = record_and_transcribe(playback)
+    user_message = transcribe_audio(user_recording)
+    response = chatgpt(api_key, conversation, character_id, character_data, user_message)
+    response_text = None
+    try:
+        # parse the response as json into a json dictionary object in python
+        response_json = json.loads(response)
+        # get the character id from the chat response
+        character_id = response_json['character_id']
+        logging.info('character id: ' + character_id)
+        response_text = response_json['response_text']
+    except:
+        logging.error('error parsing chat response: ' + response)
+        logging.error('using the last character id instead: ' + current_character_id)
+        character_id = current_character_id
 
-        text_to_speech(response_text, character_data['voice_id'], playback)
+    return text_to_speech(response_text, character_data['voice_id'])
 
 def start_multi_character_talking(characters, initial_message="hello"):
     global current_character_id
