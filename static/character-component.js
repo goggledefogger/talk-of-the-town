@@ -72,8 +72,24 @@ class CharacterComponent extends HTMLElement {
     const characterNameElem = this.shadow.querySelector('.character-name');
     characterNameElem.textContent = this.label;
 
-    const characterImageElem = this.shadow.querySelector('.character-image');
-    characterImageElem.src = this.characterImageUrl;
+    const existingImageElem = this.shadow.querySelector('.character-image');
+    let imageFilenameToUse = this.characterImageUrl.split('/').pop();
+    let existingImageFilename = existingImageElem.src.split('/').pop();
+    // if the imageFilenameToUse hasn't already been encoded, then encode it
+    if (imageFilenameToUse.indexOf('%') === -1) {
+      imageFilenameToUse = encodeURIComponent(imageFilenameToUse);
+    }
+    // if the existingImageFilename hasn't already been encoded, then encode it
+    if (existingImageFilename.indexOf('%') === -1) {
+      existingImageFilename = encodeURIComponent(existingImageFilename);
+    }
+    if (
+      !existingImageElem.getAttribute('src') ||
+      imageFilenameToUse !== existingImageFilename
+    ) {
+      // if they're not the same, then set the src attribute
+      existingImageElem.src = this.characterImageUrl;
+    }
 
     if (!viewState || !viewState.status) return;
 

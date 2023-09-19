@@ -23,7 +23,7 @@ function setupRecorder() {
       };
     })
     .then(() => {
-      console.log('Recorder ready!');
+      // recorder is ready
       return Promise.resolve();
     });
 }
@@ -53,15 +53,20 @@ document.addEventListener('recording-stopped', () => {
   return sendDataToServer(characterId, lastRecordedBlob).then(
     playAudioFromServer
   ).then(() => {
-    console.log('done playing audio done')
-    updateUI({
-      status: {
-        status_string: 'done_speaking',
-        character_id: characterId
-      }
-    });
+    donePlayingAudio(characterId)
   });
 });
+
+function donePlayingAudio(characterId) {
+  const data = {
+    status: {
+      status_string: 'done_speaking',
+      character_id: characterId
+    },
+  };
+  console.log('status update: done_speaking')
+  updateUI(data);
+}
 
 function sendDataToServer(characterId, audioBlob) {
   recordingStatus = 'sending';
@@ -86,9 +91,16 @@ function playAudioFromServer(audioBlob) {
   // create a promise that will be resolved when the audio is done playing
   return new Promise((resolve) => {
     audio.onended = () => {
-      console.log('audio ended');
       resolve();
     };
   });
 
 }
+
+socket.on('audio_event', function (data) {
+  let audio = new Audio(data.url);
+  audio.play();
+  audio.onended = () => {
+    donePlayingAudio(data.character_id)
+  };
+});

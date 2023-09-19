@@ -11,7 +11,7 @@ character_voices = {}
 available_voices = []
 client = None
 
-def google_text_to_speech(text, character_id):
+def google_text_to_speech(text, character_id, audio_file_path="output.mp3"):
     global client, available_voices, character_voices
 
     # Set the path to the service account key
@@ -60,7 +60,8 @@ def google_text_to_speech(text, character_id):
         input=synthesis_input, voice=voice, audio_config=audio_config
     )
 
-    # Save the audio to a file
-    with open("output.mp3", "wb") as out:
+    with open(audio_file_path, "wb") as out:
         out.write(response.audio_content)
+
+    return audio_file_path
 

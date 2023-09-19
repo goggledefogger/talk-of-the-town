@@ -12,17 +12,19 @@ import time
 import subprocess
 import random
 import json
+from ratelimiter import RateLimiter
 
 from database import get_current_character_data, get_system_prompt, reset_system_prompt, get_multi_character_settings
 from audio_device import get_default_audio_input_device, get_device_metadata
 from eleven_labs import get_speech_audio
-from socket_controller import socketio, emit_status, emit_conversation_state
+from socket_controller import socketio, emit_status, emit_conversation_state, emit_audio_event
 from google_text_to_speech import google_text_to_speech
 
 logging.basicConfig(level=logging.INFO)
 
 conversation_state = 'init'
 current_character_id = None
+PLAY_MODE = 'remote'
 
 init()
 
@@ -200,27 +202,39 @@ def play_waiting_music():
     return _play_with_simpleaudio(audio)
 
 
-def text_to_speech(text, voice_id):
+def text_to_speech(text, voice_id, character_id):
     set_status('synthesizing_voice')
     response = get_speech_audio(text, voice_id)
 
     set_status('speaking')
+    audio_file_path = 'output_audio/' + str(time.time()).split('.')[0] + '.mp3'
     if response.status_code == 200:
         set_status('response_audio_created')
-        return 'output.mp3'
     else:
         # logging.error('Error:', response.text)
         set_status('error_text_to_speech')
         logging.info('continuing on to use google cloud as a fallback')
         try:
-            google_text_to_speech(text, voice_id)
+            google_text_to_speech(text, voice_id, audio_file_path)
         except Exception as e:
             logging.error('error using google cloud: ' + str(e))
         set_status('response_audio_created')
-        return 'output.mp3'
+
+    if PLAY_MODE == 'local':
+        play_audio_file(audio_file_path)
+    elif PLAY_MODE == 'remote':
+        # Emit socket event with audio file URL
+        emit_audio_event({
+            'event': 'audio_ready',
+            'url': audio_file_path,
+            'character_id': character_id
+            })
+
+    return audio_file_path
+
 
 def play_audio_file(filepath):
-    audio = AudioSegment.from_mp3('output.mp3')
+    audio = AudioSegment.from_mp3(filepath)
     play(audio)
     set_status('done_speaking')
 
@@ -291,11 +305,9 @@ def start_talking(character_id=None, user_recording=None):
         logging.error('using the last character id instead: ' + current_character_id)
         character_id = current_character_id
 
-    return text_to_speech(response_text, character_data['voice_id'])
+    return text_to_speech(response_text, character_data['voice_id'], character_id)
 
-def start_multi_character_talking(characters, initial_message="hello"):
-    global current_character_id
-
+def start_multi_character_talking(characters, initial_message="hello", return_audio=False):
     reset_conversation()
     reset_system_prompt()
 
@@ -305,13 +317,27 @@ def start_multi_character_talking(characters, initial_message="hello"):
     logging.info('initial prompt: ' + initial_prompt)
 
     while is_conversation_active():
-        response, responding_character_id = chatgpt_multi_character(api_key, conversation, multi_character_system_prompt, last_character_response)
-        current_character_id = responding_character_id
-        logging.info('current character id: ' + current_character_id)
-        voice_id_to_use = characters[responding_character_id]['voice_id']
-        logging.info('using voice id for ' + responding_character_id + ': ' + voice_id_to_use)
-        text_to_speech(response, voice_id_to_use)
-        last_character_response = response
+        last_character_response = get_response_text_and_audio(multi_character_system_prompt,
+                                                              characters, last_character_response,
+                                                              return_audio)
+
+
+@RateLimiter(max_calls=1, period=10)  # One call every 10 seconds
+def get_response_text_and_audio(multi_character_system_prompt, characters,
+                                last_character_response, return_audio):
+    global current_character_id, conversation
+    logging.info('getting response text and audio')
+
+    response, responding_character_id = chatgpt_multi_character(api_key, conversation, multi_character_system_prompt, last_character_response)
+    current_character_id = responding_character_id
+    logging.info('current character id: ' + current_character_id)
+    voice_id_to_use = characters[responding_character_id]['voice_id']
+    logging.info('using voice id for ' + responding_character_id + ': ' + voice_id_to_use)
+    response_audio_file = text_to_speech(response, voice_id_to_use, current_character_id)
+    if (return_audio):
+        return response_audio_file
+    else:
+        return response
 
 if __name__ == "__main__":
     start_talking()

@@ -221,5 +221,9 @@ def start_or_continue_conversation(character_id, audio_filepath=None):
     logging.info('file path: ' + response_audio_filepath)
     return send_file(response_audio_filepath, mimetype="audio/wav")
 
+@app.route('/output_audio/<output_audio_filename>')
+def serve_output_audio(output_audio_filename):
+    return send_from_directory('output_audio', f"{output_audio_filename}")
+
 if __name__ == '__main__':
     socketio.run(app, host="0.0.0.0", port=5002, debug=True)
