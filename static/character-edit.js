@@ -173,6 +173,7 @@ function deleteCharacter(characterId) {
 }
 
 function startConversation() {
+  conversationState = 'started';
   const characterId = characterComponent.getCurrentCharacter();
   fetch('/start-conversation', {
     method: 'POST',
