@@ -23,3 +23,7 @@ def emit_status(status_data):
 def emit_conversation_state(conversation_state):
     with socket_app.app_context():
         socketio.emit('conversation_update', {'conversation_state': conversation_state})
+
+def emit_audio_event(audio_event_data):
+    with socket_app.app_context():
+        socketio.emit('audio_event', audio_event_data)

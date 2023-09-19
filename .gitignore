@@ -5,6 +5,7 @@ __pycache__/
 database.json
 myrecording.wav
 output.mp3
+output_audio/
 character_images/
 gcloud.json
 recorded_files/
